@@ -15,21 +15,51 @@ import { DeliveryDesk } from './DeliveryDesk';
 import { GoldenBeans } from './GoldenBeans';
 import { PlayerController } from './PlayerController';
 
+import { useFrame } from '@react-three/fiber';
+
+// Animated Destination Floor Ring when clicking to glide
+const FloorDestinationBeacon: React.FC<{ target: [number, number, number] }> = ({ target }) => {
+  const ringRef = React.useRef<THREE.Mesh>(null);
+  useFrame(({ clock }) => {
+    if (ringRef.current) {
+      const t = clock.getElapsedTime();
+      const s = 1 + Math.sin(t * 6) * 0.18;
+      ringRef.current.scale.set(s, s, s);
+      ringRef.current.rotation.z += 0.02;
+    }
+  });
+
+  return (
+    <group position={[target[0], 0.06, target[2]]} rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh ref={ringRef}>
+        <ringGeometry args={[0.35, 0.5, 32]} />
+        <meshBasicMaterial color="#FFD900" transparent opacity={0.85} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh>
+        <circleGeometry args={[0.16, 24]} />
+        <meshBasicMaterial color="#E5007D" transparent opacity={0.9} side={THREE.DoubleSide} />
+      </mesh>
+    </group>
+  );
+};
+
 export const WorldScene: React.FC = () => {
-  const { dayNightMode, setTargetPosition, activeModal } = useStore();
+  const { dayNightMode, setTargetPosition, targetPosition, activeModal } = useStore();
   const isNight = dayNightMode === 'night';
 
-  const handleFloorClick = (e: { point: THREE.Vector3; stopPropagation: () => void }) => {
-    // Only glide if no modal is active
-    if (activeModal === null) {
+  const handleFloorClick = (e: { point: THREE.Vector3; stopPropagation: () => void; delta?: number }) => {
+    // Only glide if no modal is active and pointer didn't drag to look around
+    if (activeModal === null && (!e.delta || e.delta < 6)) {
       setTargetPosition([e.point.x, 1.7, e.point.z]);
     }
   };
 
   return (
-    <div className="w-full h-full relative">
+    <div className="w-full h-full relative" style={{ touchAction: 'none' }}>
       <Canvas
         shadows
+        dpr={[1, 1.75]}
+        performance={{ min: 0.6 }}
         camera={{ fov: 65, near: 0.1, far: 120, position: [0, 1.7, 24] }}
         gl={{
           antialias: true,
@@ -115,6 +145,9 @@ export const WorldScene: React.FC = () => {
 
           {/* First-Person Controller */}
           <PlayerController />
+
+          {/* Target Glide Beacon on Floor */}
+          {targetPosition && <FloorDestinationBeacon target={targetPosition} />}
 
           {/* Soft Ground Contact Shadows */}
           <ContactShadows

@@ -15,7 +15,7 @@ interface CoffeeBagMeshProps {
 }
 
 const CoffeeBagMesh: React.FC<CoffeeBagMeshProps> = ({ product, position, rotationY }) => {
-  const { playerPosition, openProductDetail, activeModal } = useStore();
+  const { playerPosition, openProductDetail, quickPickProduct, activeModal } = useStore();
   const [hovered, setHovered] = useState(false);
 
   // Generate unique procedural bag texture
@@ -81,11 +81,8 @@ const CoffeeBagMesh: React.FC<CoffeeBagMeshProps> = ({ product, position, rotati
       {/* Proximity / Hover Interactive Badge (HTML Billboard) */}
       {(hovered || isNearby) && activeModal === null && (
         <Html position={[0, 1.25, 0]} center distanceFactor={10} zIndexRange={[100, 0]}>
-          <button
-            onClick={handleClick}
-            className="flex flex-col items-center group cursor-pointer transition-transform transform hover:scale-105 select-none"
-          >
-            <div className="bg-moyee-charcoal/95 border-2 border-moyee-pink px-3 py-1.5 rounded-full shadow-2xl flex items-center space-x-2 backdrop-blur-md">
+          <div className="flex flex-col items-center select-none animate-fadeIn pointer-events-auto">
+            <div className="bg-moyee-charcoal/95 border-2 border-moyee-pink px-3.5 py-1.5 rounded-full shadow-2xl flex items-center space-x-2 backdrop-blur-md">
               <span className="w-2.5 h-2.5 rounded-full bg-moyee-yellow animate-ping" />
               <span className="font-oswald text-xs uppercase tracking-wider text-white font-bold">
                 {product.name}
@@ -94,10 +91,26 @@ const CoffeeBagMesh: React.FC<CoffeeBagMeshProps> = ({ product, position, rotati
                 €{product.price.toFixed(2)}
               </span>
             </div>
-            <div className="bg-moyee-yellow text-moyee-charcoal text-[9px] font-bold font-oswald uppercase px-2 py-0.5 rounded-md mt-1 shadow-md">
-              Tap / Press E to Inspect
+            <div className="flex items-center space-x-1.5 mt-1.5">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  quickPickProduct(product);
+                }}
+                className="bg-moyee-pink hover:bg-moyee-pink-hover active:scale-90 text-white text-[10px] font-bold font-oswald uppercase px-2.5 py-1 rounded-lg shadow-md transition-all flex items-center space-x-1"
+                title="Quick Pick into Basket"
+              >
+                <span>🛒 Pick Up</span>
+              </button>
+              <button
+                onClick={handleClick}
+                className="bg-moyee-yellow hover:bg-yellow-400 active:scale-90 text-moyee-charcoal text-[10px] font-bold font-oswald uppercase px-2.5 py-1 rounded-lg shadow-md transition-all"
+                title="Inspect Details"
+              >
+                <span>🔍 Details</span>
+              </button>
             </div>
-          </button>
+          </div>
         </Html>
       )}
     </group>

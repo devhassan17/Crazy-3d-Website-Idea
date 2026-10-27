@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Compass,
   ShoppingBag,
@@ -10,11 +10,11 @@ import {
   ExternalLink,
   Sparkles,
   Camera,
-  Coffee,
-  CreditCard,
-  Globe,
-  Truck,
-  RotateCcw
+  RotateCcw,
+  RotateCw,
+  Eye,
+  EyeOff,
+  MoveHorizontal
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import { STORE_ZONES } from '../../data/products';
@@ -32,10 +32,41 @@ export const HUD: React.FC = () => {
     isAudioMuted,
     toggleAudio,
     foundBeanIds,
-    isPointerLocked
+    isPointerLocked,
+    rotatePlayerY,
+    turnAround180
   } = useStore();
 
   const [isTeleportOpen, setIsTeleportOpen] = useState(false);
+  const turnIntervalRef = useRef<number | null>(null);
+
+  const startTurning = (direction: 'left' | 'right') => {
+    // Immediate turn increment
+    const delta = direction === 'left' ? 0.35 : -0.35;
+    rotatePlayerY(delta);
+
+    // Continuous smooth turning while button is held
+    if (turnIntervalRef.current) clearInterval(turnIntervalRef.current);
+    turnIntervalRef.current = setInterval(() => {
+      rotatePlayerY(direction === 'left' ? 0.08 : -0.08);
+    }, 30);
+  };
+
+  const stopTurning = () => {
+    if (turnIntervalRef.current) {
+      clearInterval(turnIntervalRef.current);
+      turnIntervalRef.current = null;
+    }
+  };
+
+  const togglePointerLock = () => {
+    const canvas = document.querySelector('canvas');
+    if (document.pointerLockElement) {
+      document.exitPointerLock?.();
+    } else if (canvas) {
+      canvas.requestPointerLock?.();
+    }
+  };
   const totals = getCartTotals();
   const currentZoneObj = STORE_ZONES.find((z) => z.id === currentZone);
 
@@ -194,8 +225,8 @@ export const HUD: React.FC = () => {
 
         {/* Primary Bottom Navigation Bar */}
         <div className="flex items-center justify-between gap-3">
-          {/* Left Actions: Map & Teleport */}
-          <div className="pointer-events-auto flex items-center space-x-2">
+          {/* Left Actions: Map, Teleport, & Look Controls */}
+          <div className="pointer-events-auto flex items-center space-x-2 flex-wrap gap-y-2">
             {/* Interactive Map Button */}
             <button
               onClick={() => openModal('store_map')}
@@ -213,13 +244,67 @@ export const HUD: React.FC = () => {
               <RotateCcw className="w-3.5 h-3.5 text-moyee-pink" />
               <span className="hidden sm:inline">Jump to Section</span>
             </button>
+
+            {/* Camera Look Controller (Left / Right / 180 / FPS Mode) */}
+            <div className="flex items-center space-x-1 bg-moyee-charcoal/90 border border-moyee-yellow/40 px-2 py-1.5 rounded-full shadow-2xl backdrop-blur-md">
+              <span className="text-[10px] font-oswald uppercase font-bold text-moyee-yellow px-1 hidden sm:inline">
+                Look:
+              </span>
+              {/* Turn Left Button */}
+              <button
+                onMouseDown={() => startTurning('left')}
+                onMouseUp={stopTurning}
+                onMouseLeave={stopTurning}
+                onTouchStart={() => startTurning('left')}
+                onTouchEnd={stopTurning}
+                className="p-1.5 rounded-full bg-moyee-dark hover:bg-moyee-pink text-white transition-all active:scale-90"
+                title="Turn Left (← / Q) - Click or hold"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
+
+              {/* Turn Right Button */}
+              <button
+                onMouseDown={() => startTurning('right')}
+                onMouseUp={stopTurning}
+                onMouseLeave={stopTurning}
+                onTouchStart={() => startTurning('right')}
+                onTouchEnd={stopTurning}
+                className="p-1.5 rounded-full bg-moyee-dark hover:bg-moyee-pink text-white transition-all active:scale-90"
+                title="Turn Right (→ / E) - Click or hold"
+              >
+                <RotateCw className="w-4 h-4" />
+              </button>
+
+              {/* Turn 180° Button */}
+              <button
+                onClick={turnAround180}
+                className="px-2 py-1 rounded-full bg-moyee-dark hover:bg-moyee-yellow hover:text-moyee-charcoal text-[11px] font-oswald font-bold text-gray-200 transition-all active:scale-90"
+                title="Look Behind (180°)"
+              >
+                180°
+              </button>
+
+              {/* FPS Pointer Lock Toggle Button */}
+              <button
+                onClick={togglePointerLock}
+                className={`p-1.5 rounded-full transition-all active:scale-90 ${
+                  isPointerLocked
+                    ? 'bg-moyee-pink text-white'
+                    : 'bg-moyee-dark hover:bg-gray-700 text-gray-300 hover:text-white'
+                }`}
+                title={isPointerLocked ? 'Exit Mouse Look (Esc)' : 'Lock Mouse Look (FPS Mode)'}
+              >
+                {isPointerLocked ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
           </div>
 
           {/* Desktop Controls Hint Helper */}
-          <div className="hidden lg:flex items-center space-x-3 bg-moyee-charcoal/70 border border-white/10 px-4 py-2 rounded-full text-xs font-condensed text-gray-300 backdrop-blur-md">
+          <div className="hidden xl:flex items-center space-x-3 bg-moyee-charcoal/70 border border-white/10 px-4 py-2 rounded-full text-xs font-condensed text-gray-300 backdrop-blur-md">
             <span><kbd className="bg-gray-800 px-1.5 py-0.5 rounded text-white border border-gray-600">W A S D</kbd> Walk</span>
-            <span><kbd className="bg-gray-800 px-1.5 py-0.5 rounded text-white border border-gray-600">Shift</kbd> Run</span>
-            <span><kbd className="bg-gray-800 px-1.5 py-0.5 rounded text-white border border-gray-600">Mouse</kbd> Look</span>
+            <span><kbd className="bg-gray-800 px-1.5 py-0.5 rounded text-white border border-gray-600">← →</kbd> / <kbd className="bg-gray-800 px-1.5 py-0.5 rounded text-white border border-gray-600">Q E</kbd> Look Left/Right</span>
+            <span><kbd className="bg-gray-800 px-1.5 py-0.5 rounded text-white border border-gray-600">Drag Mouse</kbd> Look 360°</span>
             <span><kbd className="bg-gray-800 px-1.5 py-0.5 rounded text-white border border-gray-600">Click Floor</kbd> Glide</span>
           </div>
 

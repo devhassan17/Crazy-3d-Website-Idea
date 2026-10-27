@@ -13,6 +13,14 @@
     font-family: 'Roboto Condensed', system-ui, -apple-system, sans-serif;
     color: #FFFFFF;
     -webkit-font-smoothing: antialiased;
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  canvas {
+    touch-action: none;
   }
 
   ::selection {

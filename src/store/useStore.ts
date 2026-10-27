@@ -14,16 +14,27 @@ interface StoreState {
   hasSeenWelcome: boolean;
   controlsMode: 'first_person' | 'click_to_move' | 'mobile_touch';
   isPointerLocked: boolean;
+  mobileJoystickInput: { x: number; y: number };
+  isSprinting: boolean;
+  nearbyProduct: Product | null;
+  toastMessage: string | null;
 
   // Actions for Navigation
   setPlayerPosition: (pos: [number, number, number]) => void;
   setTargetPosition: (pos: [number, number, number] | null) => void;
   setCameraTarget: (target: [number, number, number]) => void;
   setPlayerRotationY: (rot: number) => void;
+  rotatePlayerY: (deltaAngle: number) => void;
+  turnAround180: () => void;
   setCurrentZone: (zone: StoreZoneId) => void;
   setIsInsideStore: (inside: boolean) => void;
   setPointerLocked: (locked: boolean) => void;
   setControlsMode: (mode: 'first_person' | 'click_to_move' | 'mobile_touch') => void;
+  setMobileJoystickInput: (input: { x: number; y: number }) => void;
+  toggleSprint: () => void;
+  setNearbyProduct: (product: Product | null) => void;
+  quickPickProduct: (product: Product) => void;
+  showToast: (msg: string) => void;
   enterStoreCinematic: () => void;
   teleportToZone: (zoneId: StoreZoneId) => void;
 
@@ -90,15 +101,44 @@ export const useStore = create<StoreState>((set, get) => ({
   hasSeenWelcome: false,
   controlsMode: 'first_person',
   isPointerLocked: false,
+  mobileJoystickInput: { x: 0, y: 0 },
+  isSprinting: false,
+  nearbyProduct: null,
+  toastMessage: null,
 
   setPlayerPosition: (pos) => set({ playerPosition: pos }),
   setTargetPosition: (pos) => set({ targetPosition: pos }),
   setCameraTarget: (target) => set({ cameraTarget: target }),
   setPlayerRotationY: (rot) => set({ playerRotationY: rot }),
+  rotatePlayerY: (deltaAngle) => {
+    const currentRot = get().playerRotationY;
+    set({ playerRotationY: currentRot + deltaAngle });
+  },
+  turnAround180: () => {
+    const currentRot = get().playerRotationY;
+    set({ playerRotationY: currentRot + Math.PI });
+  },
   setCurrentZone: (zone) => set({ currentZone: zone }),
   setIsInsideStore: (inside) => set({ isInsideStore: inside }),
   setPointerLocked: (locked) => set({ isPointerLocked: locked }),
   setControlsMode: (mode) => set({ controlsMode: mode }),
+  setMobileJoystickInput: (input) => set({ mobileJoystickInput: input }),
+  toggleSprint: () => set((state) => ({ isSprinting: !state.isSprinting })),
+  setNearbyProduct: (product) => set({ nearbyProduct: product }),
+  quickPickProduct: (product) => {
+    const defaultWeight = product.weights.find((w) => w.isDefault)?.label || product.weights[0].label;
+    const defaultGrind = product.grindOptions[0] || 'Whole Beans';
+    get().addToCart(product, defaultWeight, defaultGrind, 1);
+    get().showToast(`🛒 Added ${product.name} to Basket! (€${product.price.toFixed(2)})`);
+  },
+  showToast: (msg) => {
+    set({ toastMessage: msg });
+    setTimeout(() => {
+      if (get().toastMessage === msg) {
+        set({ toastMessage: null });
+      }
+    }, 2800);
+  },
 
   enterStoreCinematic: () => {
     sounds.playDoorChime();

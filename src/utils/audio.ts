@@ -4,6 +4,8 @@
 class SoundSystem {
   private ctx: AudioContext | null = null;
   private isMuted: boolean = false;
+  private ambientGain: GainNode | null = null;
+  private ambientSource: AudioBufferSourceNode | null = null;
 
   private init() {
     if (!this.ctx) {
@@ -17,6 +19,65 @@ class SoundSystem {
 
   public setMuted(muted: boolean) {
     this.isMuted = muted;
+    if (muted) {
+      this.stopStoreAmbiance();
+    } else {
+      this.startStoreAmbiance();
+    }
+  }
+
+  public startStoreAmbiance() {
+    if (this.isMuted || this.ambientSource) return;
+    this.init();
+    if (!this.ctx) return;
+
+    try {
+      const bufferSize = this.ctx.sampleRate * 3;
+      const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      let b0 = 0, b1 = 0, b2 = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        b0 = 0.99 * b0 + white * 0.05;
+        b1 = 0.95 * b1 + white * 0.05;
+        b2 = 0.85 * b2 + white * 0.08;
+        data[i] = (b0 + b1 + b2) * 0.15;
+      }
+
+      const src = this.ctx.createBufferSource();
+      src.buffer = buffer;
+      src.loop = true;
+
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(320, this.ctx.currentTime);
+
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(0.018, this.ctx.currentTime);
+
+      src.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.ctx.destination);
+
+      src.start();
+      this.ambientSource = src;
+      this.ambientGain = gain;
+    } catch {
+      // browser audio policy handling
+    }
+  }
+
+  public stopStoreAmbiance() {
+    if (this.ambientSource) {
+      try {
+        this.ambientSource.stop();
+        this.ambientSource.disconnect();
+      } catch {
+        // ignore
+      }
+      this.ambientSource = null;
+      this.ambientGain = null;
+    }
   }
 
   // Soft futuristic UI click / blip

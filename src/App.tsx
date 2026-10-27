@@ -1,6 +1,7 @@
 import React from 'react';
 import { WorldScene } from './components/3d/WorldScene';
 import { HUD } from './components/ui/HUD';
+import { MobileControls } from './components/ui/MobileControls';
 import { ModalContainer } from './components/ui/ModalContainer';
 
 export const App: React.FC = () => {
@@ -11,6 +12,9 @@ export const App: React.FC = () => {
 
       {/* 2D Interactive HUD Overlay */}
       <HUD />
+
+      {/* Touch Joystick & Quick-Pick Store Experience */}
+      <MobileControls />
 
       {/* Popups & Modals */}
       <ModalContainer />
