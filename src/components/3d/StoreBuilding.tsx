@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
-import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { textureFactory } from '../../utils/textures';
 import { useStore } from '../../store/useStore';
+import { ProximityHtml } from './ProximityHtml';
 
 export const StoreBuilding: React.FC = () => {
   const { isInsideStore, dayNightMode } = useStore();
@@ -311,50 +311,50 @@ export const StoreBuilding: React.FC = () => {
       {/* ======================================================== */}
       {/* Left Wall Beans Sign */}
       <group position={[-10.8, 4.2, 0]}>
-        <Html position={[0, 0, 0]} rotation={[0, Math.PI / 2, 0]} transform center distanceFactor={14}>
+        <ProximityHtml radius={6.5} position={[0, 0, 0]} rotation={[0, Math.PI / 2, 0]} transform center distanceFactor={14}>
           <div className="bg-moyee-charcoal/95 border-2 border-moyee-yellow px-4 py-2 rounded-xl shadow-2xl backdrop-blur-md flex items-center space-x-2 select-none whitespace-nowrap">
             <span className="w-2.5 h-2.5 rounded-full bg-moyee-yellow animate-pulse" />
             <span className="font-oswald text-xs sm:text-sm uppercase font-bold tracking-widest text-white">
               ☕ AISLE 1: ETHIOPIAN SINGLE ORIGIN BEANS
             </span>
           </div>
-        </Html>
+        </ProximityHtml>
       </group>
 
       {/* Right Wall Capsules Sign */}
       <group position={[10.8, 4.2, 0]}>
-        <Html position={[0, 0, 0]} rotation={[0, -Math.PI / 2, 0]} transform center distanceFactor={14}>
+        <ProximityHtml radius={6.5} position={[0, 0, 0]} rotation={[0, -Math.PI / 2, 0]} transform center distanceFactor={14}>
           <div className="bg-moyee-charcoal/95 border-2 border-moyee-pink px-4 py-2 rounded-xl shadow-2xl backdrop-blur-md flex items-center space-x-2 select-none whitespace-nowrap">
             <span className="w-2.5 h-2.5 rounded-full bg-moyee-pink animate-pulse" />
             <span className="font-oswald text-xs sm:text-sm uppercase font-bold tracking-widest text-white">
               🔴 AISLE 2: COMPOSTABLE CAPSULES & PODS
             </span>
           </div>
-        </Html>
+        </ProximityHtml>
       </group>
 
       {/* Tasting Bar Overhead Sign */}
       <group position={[-4.5, 4.0, -8.5]}>
-        <Html position={[0, 0, 0]} transform center distanceFactor={14}>
+        <ProximityHtml radius={6.5} position={[0, 0, 0]} transform center distanceFactor={14}>
           <div className="bg-moyee-charcoal/95 border-2 border-moyee-yellow px-4 py-2 rounded-xl shadow-2xl backdrop-blur-md flex items-center space-x-2 select-none whitespace-nowrap">
             <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse" />
             <span className="font-oswald text-xs sm:text-sm uppercase font-bold tracking-widest text-white">
               ☕ TASTING BAR • SAMPLE FRESH ROASTS
             </span>
           </div>
-        </Html>
+        </ProximityHtml>
       </group>
 
       {/* Checkout Overhead Sign */}
       <group position={[4.5, 4.0, -8.5]}>
-        <Html position={[0, 0, 0]} transform center distanceFactor={14}>
+        <ProximityHtml radius={6.5} position={[0, 0, 0]} transform center distanceFactor={14}>
           <div className="bg-moyee-charcoal/95 border-2 border-green-500 px-4 py-2 rounded-xl shadow-2xl backdrop-blur-md flex items-center space-x-2 select-none whitespace-nowrap">
             <span className="w-2.5 h-2.5 rounded-full bg-green-400 animate-pulse" />
             <span className="font-oswald text-xs sm:text-sm uppercase font-bold tracking-widest text-white">
               💳 CASHIER & EXPRESS CHECKOUT
             </span>
           </div>
-        </Html>
+        </ProximityHtml>
       </group>
     </group>
   );

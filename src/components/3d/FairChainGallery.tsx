@@ -1,12 +1,12 @@
 import React, { useMemo, useRef } from 'react';
-import { Html } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { textureFactory } from '../../utils/textures';
 import { useStore } from '../../store/useStore';
+import { ProximityHtml } from './ProximityHtml';
 
 export const FairChainGallery: React.FC = () => {
-  const { playerPosition, openModal, activeModal } = useStore();
+  const { openModal } = useStore();
   const globeRef = useRef<THREE.Mesh>(null);
   const ringRef = useRef<THREE.Group>(null);
 
@@ -21,11 +21,6 @@ export const FairChainGallery: React.FC = () => {
       ringRef.current.rotation.z -= delta * 0.15;
     }
   });
-
-  const playerVec = useMemo(() => new THREE.Vector3(...playerPosition), [playerPosition]);
-  const galleryVec = useMemo(() => new THREE.Vector3(0, 1.7, -13.5), []);
-  const distance = playerVec.distanceTo(galleryVec);
-  const isNearby = distance < 4.5;
 
   return (
     <group position={[0, 0, -13.5]}>
@@ -75,7 +70,7 @@ export const FairChainGallery: React.FC = () => {
           <boxGeometry args={[1.2, 2.4, 0.15]} />
           <meshStandardMaterial color="#111827" roughness={0.4} />
         </mesh>
-        <Html position={[0, 1.4, 0.09]} center transform distanceFactor={5}>
+        <ProximityHtml radius={4.5} position={[0, 1.4, 0.09]} center transform distanceFactor={5}>
           <div className="bg-moyee-charcoal/90 border border-moyee-pink p-3 rounded-lg text-center w-48 select-none">
             <span className="text-xl">🏭</span>
             <h4 className="font-oswald text-xs font-bold text-moyee-pink uppercase">1. FACTORIES</h4>
@@ -83,7 +78,7 @@ export const FairChainGallery: React.FC = () => {
               Roasting at Origin in Addis Ababa & Nairobi. +300% local economic impact!
             </p>
           </div>
-        </Html>
+        </ProximityHtml>
       </group>
 
       {/* Pillar 2: FARMERS (Right: X: 2.8) */}
@@ -92,7 +87,7 @@ export const FairChainGallery: React.FC = () => {
           <boxGeometry args={[1.2, 2.4, 0.15]} />
           <meshStandardMaterial color="#111827" roughness={0.4} />
         </mesh>
-        <Html position={[0, 1.4, 0.09]} center transform distanceFactor={5}>
+        <ProximityHtml radius={4.5} position={[0, 1.4, 0.09]} center transform distanceFactor={5}>
           <div className="bg-moyee-charcoal/90 border border-moyee-yellow p-3 rounded-lg text-center w-48 select-none">
             <span className="text-xl">🤝</span>
             <h4 className="font-oswald text-xs font-bold text-moyee-yellow uppercase">2. FARMERS</h4>
@@ -100,14 +95,14 @@ export const FairChainGallery: React.FC = () => {
               Living incomes above LIRP. 20% above open market rates for all smallholders.
             </p>
           </div>
-        </Html>
+        </ProximityHtml>
       </group>
 
       {/* ======================================================== */}
       {/* 3. WALL ILLUMINATION & BANNER                            */}
       {/* ======================================================== */}
       <group position={[0, 4.3, -2.1]}>
-        <Html center distanceFactor={7}>
+        <ProximityHtml radius={5.5} center distanceFactor={7}>
           <div className="bg-moyee-charcoal/95 border-2 border-moyee-pink px-6 py-2.5 rounded-2xl text-center select-none shadow-2xl">
             <span className="bg-moyee-pink text-white text-[10px] font-bold font-oswald uppercase px-2 py-0.5 rounded-full">
               VERIFIED IMPACT
@@ -119,25 +114,23 @@ export const FairChainGallery: React.FC = () => {
               ETHIOPIA & KENYA ROASTERIES • 50/50 VALUE REVOLUTION
             </p>
           </div>
-        </Html>
+        </ProximityHtml>
       </group>
 
       {/* Proximity Interaction Prompt */}
-      {isNearby && activeModal === null && (
-        <Html position={[0, 2.4, 1.2]} center distanceFactor={10}>
-          <button
-            onClick={() => openModal('fairchain_gallery')}
-            className="flex flex-col items-center group cursor-pointer transition-transform transform hover:scale-105 select-none animate-bounce"
-          >
-            <div className="bg-moyee-pink text-white font-oswald text-sm font-bold uppercase tracking-wider px-4 py-2 rounded-full shadow-2xl flex items-center space-x-2 border-2 border-moyee-yellow">
-              <span>🌍 EXPLORE FAIRCHAIN 3D ORIGIN</span>
-            </div>
-            <div className="bg-moyee-charcoal text-white text-[10px] font-bold font-oswald uppercase px-2 py-0.5 rounded-md mt-1 shadow-md">
-              Click to Discover Stories & Carbon Data
-            </div>
-          </button>
-        </Html>
-      )}
+      <ProximityHtml radius={3.5} position={[0, 2.4, 1.2]} center distanceFactor={10}>
+        <button
+          onClick={() => openModal('fairchain_gallery')}
+          className="flex flex-col items-center group cursor-pointer transition-transform transform hover:scale-105 select-none animate-bounce"
+        >
+          <div className="bg-moyee-pink text-white font-oswald text-sm font-bold uppercase tracking-wider px-4 py-2 rounded-full shadow-2xl flex items-center space-x-2 border-2 border-moyee-yellow">
+            <span>🌍 EXPLORE FAIRCHAIN 3D ORIGIN</span>
+          </div>
+          <div className="bg-moyee-charcoal text-white text-[10px] font-bold font-oswald uppercase px-2 py-0.5 rounded-md mt-1 shadow-md">
+            Click to Discover Stories & Carbon Data
+          </div>
+        </button>
+      </ProximityHtml>
     </group>
   );
 };

@@ -1,15 +1,9 @@
-import React, { useMemo } from 'react';
-import { Html } from '@react-three/drei';
-import * as THREE from 'three';
+import React from 'react';
 import { useStore } from '../../store/useStore';
+import { ProximityHtml } from './ProximityHtml';
 
 export const CustomerSupportDesk: React.FC = () => {
-  const { playerPosition, openModal, activeModal } = useStore();
-
-  const playerVec = useMemo(() => new THREE.Vector3(...playerPosition), [playerPosition]);
-  const supportVec = useMemo(() => new THREE.Vector3(8, 1.7, -13), []);
-  const distance = playerVec.distanceTo(supportVec);
-  const isNearby = distance < 4.5;
+  const { openModal } = useStore();
 
   return (
     <group position={[8, 0, -13]}>
@@ -111,7 +105,7 @@ export const CustomerSupportDesk: React.FC = () => {
       {/* 4. CEILING BANNER & PROXIMITY CALLOUT                    */}
       {/* ======================================================== */}
       <group position={[0, 4.3, -2.1]}>
-        <Html center distanceFactor={7}>
+        <ProximityHtml radius={5.5} center distanceFactor={7}>
           <div className="bg-moyee-charcoal/95 border-2 border-moyee-yellow px-6 py-2.5 rounded-2xl text-center select-none shadow-2xl">
             <span className="bg-moyee-yellow text-moyee-charcoal text-[10px] font-bold font-oswald uppercase px-2 py-0.5 rounded-full">
               CUSTOMER CARE
@@ -123,25 +117,23 @@ export const CustomerSupportDesk: React.FC = () => {
               Meet Melanie from Kenya • FAQs • Complaints • Order Inquiries
             </p>
           </div>
-        </Html>
+        </ProximityHtml>
       </group>
 
       {/* Proximity Interaction Prompt */}
-      {isNearby && activeModal === null && (
-        <Html position={[0, 2.2, 0.2]} center distanceFactor={10}>
-          <button
-            onClick={() => openModal('customer_support')}
-            className="flex flex-col items-center group cursor-pointer transition-transform transform hover:scale-105 select-none animate-bounce"
-          >
-            <div className="bg-moyee-yellow text-moyee-charcoal font-oswald text-sm font-bold uppercase tracking-wider px-4 py-2 rounded-full shadow-2xl flex items-center space-x-2 border-2 border-moyee-pink">
-              <span>📮 TALK TO CUSTOMER SUPPORT</span>
-            </div>
-            <div className="bg-moyee-charcoal text-white text-[10px] font-bold font-oswald uppercase px-2 py-0.5 rounded-md mt-1 shadow-md">
-              Click to Open Helpdesk & FAQ Form
-            </div>
-          </button>
-        </Html>
-      )}
+      <ProximityHtml radius={3.5} position={[0, 2.2, 0.2]} center distanceFactor={10}>
+        <button
+          onClick={() => openModal('customer_support')}
+          className="flex flex-col items-center group cursor-pointer transition-transform transform hover:scale-105 select-none animate-bounce"
+        >
+          <div className="bg-moyee-yellow text-moyee-charcoal font-oswald text-sm font-bold uppercase tracking-wider px-4 py-2 rounded-full shadow-2xl flex items-center space-x-2 border-2 border-moyee-pink">
+            <span>📮 TALK TO CUSTOMER SUPPORT</span>
+          </div>
+          <div className="bg-moyee-charcoal text-white text-[10px] font-bold font-oswald uppercase px-2 py-0.5 rounded-md mt-1 shadow-md">
+            Click to Open Helpdesk & FAQ Form
+          </div>
+        </button>
+      </ProximityHtml>
     </group>
   );
 };

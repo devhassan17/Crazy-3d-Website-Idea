@@ -2,119 +2,168 @@ import React, { useEffect, useRef } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useStore } from '../../store/useStore';
-import { STORE_ZONES, MOYEE_PRODUCTS } from '../../data/products';
+import { MOYEE_PRODUCTS } from '../../data/products';
 import { sounds } from '../../utils/audio';
+import { playerState } from '../../utils/playerState';
+import { StoreZoneId } from '../../types';
 
+// Re-used objects (avoid per-frame allocations / GC stutter)
+const UP = new THREE.Vector3(0, 1, 0);
+const inputVec = new THREE.Vector3();
+const targetVel = new THREE.Vector3();
+const euler = new THREE.Euler(0, 0, 0, 'YXZ');
+
+const PITCH_LIMIT = Math.PI / 2.6;
+const WALK_SPEED = 4.6;
+const RUN_SPEED = 7.8;
+const PRODUCT_PICK_RADIUS = 3.0;
+
+/** Frame-rate independent smoothing factor */
+const damp = (lambda: number, dt: number) => 1 - Math.exp(-lambda * dt);
+
+// Collision detection against the store layout
+const checkCollisions = (newX: number, newZ: number): { x: number; z: number } => {
+  let x = newX;
+  let z = newZ;
+
+  // 1. Outer World Boundary Limits
+  if (z > 14) {
+    // Exterior street limits
+    x = Math.max(-18, Math.min(18, x));
+    z = Math.min(28, z);
+  } else {
+    // Inside Store limits
+    x = Math.max(-11.6, Math.min(11.6, x));
+    z = Math.max(-14.8, Math.min(14, z));
+  }
+
+  // 2. Front Doorway Barrier (Doors are open at X: [-2.2, 2.2], but walls block else at Z: 14)
+  if (Math.abs(z - 14) < 0.35 && Math.abs(x) > 2.2) {
+    z = z > 14 ? 14.3 : 13.7;
+  }
+
+  // 3. Left Shelf Barrier (X: -11.5, Z: -5.5 to 5.5)
+  if (x < -10.2 && z >= -5.5 && z <= 5.5) x = -10.2;
+
+  // 4. Right Shelf Barrier (X: 11.5, Z: -4.5 to 4.5)
+  if (x > 10.2 && z >= -4.5 && z <= 4.5) x = 10.2;
+
+  // 5. Tasting Bar Counter Obstacle (X: -6.8 to -2.2, Z: -11.0 to -8.8)
+  if (x >= -6.8 && x <= -2.2 && z >= -11.0 && z <= -8.8) {
+    z = Math.abs(z + 8.8) < Math.abs(z + 11.0) ? -8.7 : -11.1;
+  }
+
+  // 6. Checkout Counter Obstacle (X: 2.2 to 6.8, Z: -11.0 to -8.8)
+  if (x >= 2.2 && x <= 6.8 && z >= -11.0 && z <= -8.8) {
+    z = Math.abs(z + 8.8) < Math.abs(z + 11.0) ? -8.7 : -11.1;
+  }
+
+  // 7. FairChain Globe Center Plinth (Circle at 0, -13.5, Radius: 2.1)
+  const distToGlobe = Math.hypot(x, z + 13.5);
+  if (distToGlobe < 2.1) {
+    const angle = Math.atan2(z + 13.5, x);
+    x = Math.cos(angle) * 2.15;
+    z = -13.5 + Math.sin(angle) * 2.15;
+  }
+
+  return { x, z };
+};
+
+// Zone lookup based on coordinates
+const detectZone = (x: number, z: number): StoreZoneId => {
+  if (z > 14) return 'exterior';
+  if (z > 10) return 'entrance';
+  if (x < -7 && z >= -5 && z <= 5) return 'beans_shelf';
+  if (x > 7 && z >= 0 && z <= 5) return 'capsules_shelf';
+  if (x > 7 && z < 0 && z >= -5) return 'bundles_shelf';
+  if (x < -1 && z < -6 && z > -11) return 'tasting_bar';
+  if (x > 1 && z < -6 && z > -11) return 'checkout_counter';
+  if (x < -4 && z <= -11) return 'subscription_lounge';
+  if (x > 4 && z <= -11) return 'helpdesk';
+  if (Math.abs(x) <= 4 && z <= -11) return 'fairchain_gallery';
+  if (x < -3 && z > 5 && z <= 10) return 'coffee_quiz';
+  if (x > 3 && z > 5 && z <= 10) return 'delivery_desk';
+  return 'entrance';
+};
+
+/**
+ * First-person controller.
+ *
+ * PERFORMANCE NOTE: nothing in here writes to the Zustand store on a per-frame
+ * basis. Position/rotation live in the mutable `playerState`; the store is only
+ * touched when something *changes* (zone, nearby product, glide arrival).
+ */
 export const PlayerController: React.FC = () => {
   const { camera, gl } = useThree();
-  const {
-    playerPosition,
-    setPlayerPosition,
-    playerRotationY,
-    setPlayerRotationY,
-    targetPosition,
-    setTargetPosition,
-    currentZone,
-    setCurrentZone,
-    setIsInsideStore,
-    activeModal,
-    openModal,
-    isPointerLocked,
-    setPointerLocked,
-    mobileJoystickInput,
-    isSprinting,
-    nearbyProduct,
-    setNearbyProduct,
-    quickPickProduct,
-    showToast
-  } = useStore();
+  // Only subscribe to what actually needs to re-bind listeners
+  const activeModal = useStore((s) => s.activeModal);
+  const setPointerLocked = useStore((s) => s.setPointerLocked);
 
-  const keysPressed = useRef<{ [key: string]: boolean }>({});
+  const keysPressed = useRef<Record<string, boolean>>({});
   const moveDistanceAccumulator = useRef(0);
-
-  // Smooth camera yaw/pitch damping
-  const yaw = useRef(playerRotationY);
-  const targetYaw = useRef(playerRotationY);
   const pitch = useRef(0);
   const targetPitch = useRef(0);
-
-  // Smooth velocity physics
   const velocity = useRef(new THREE.Vector3());
   const walkBobTimer = useRef(0);
+  const frameCounter = useRef(0);
+  const lastNearbyId = useRef<string | null>(null);
 
-  const isPointerDown = useRef(false);
-  const lastPointerPos = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const hasDragged = useRef(false);
+  // Drag-look tracking (single active pointer so the joystick finger never rotates the camera)
+  const lookPointerId = useRef<number | null>(null);
+  const lastPointerPos = useRef({ x: 0, y: 0 });
 
-  // Sync yaw with playerRotationY from store (e.g. after teleporting or UI turn buttons)
+  // Initialise camera at the player's position
   useEffect(() => {
-    if (Math.abs(targetYaw.current - playerRotationY) > 0.05) {
-      targetYaw.current = playerRotationY;
-      yaw.current = playerRotationY;
-    }
-  }, [playerRotationY]);
+    camera.position.set(playerState.x, 1.7, playerState.z);
+  }, [camera]);
 
-  // Pointer Lock and Mouse/Touch Drag handling for 360° looking left, right, up, down
+  // Pointer Lock + Mouse/Touch drag-to-look
   useEffect(() => {
+    const dom = gl.domElement;
+
     const handlePointerLockChange = () => {
-      const locked = document.pointerLockElement === gl.domElement;
-      setPointerLocked(locked);
+      setPointerLocked(document.pointerLockElement === dom);
     };
 
     const handlePointerDown = (e: PointerEvent) => {
-      if (activeModal !== null) return;
-      const target = e.target as HTMLElement | null;
-      if (target && target.closest('button, a, input, select, textarea, [data-interactive="true"]')) {
-        return;
-      }
-      isPointerDown.current = true;
-      hasDragged.current = false;
+      if (activeModal !== null || lookPointerId.current !== null) return;
+      lookPointerId.current = e.pointerId;
       lastPointerPos.current = { x: e.clientX, y: e.clientY };
     };
 
     const handlePointerMove = (e: PointerEvent) => {
       if (activeModal !== null) return;
 
-      if (document.pointerLockElement === gl.domElement) {
-        // True FPS pointer lock look
+      if (document.pointerLockElement === dom) {
         const sensitivity = 0.0022;
-        targetYaw.current -= e.movementX * sensitivity;
+        playerState.targetYaw -= e.movementX * sensitivity;
         targetPitch.current -= e.movementY * sensitivity;
-        targetPitch.current = Math.max(-Math.PI / 2.5, Math.min(Math.PI / 2.5, targetPitch.current));
-      } else if (isPointerDown.current) {
-        // Mouse / Touch drag to look left, right, up, down
+      } else if (e.pointerId === lookPointerId.current) {
         const dx = e.clientX - lastPointerPos.current.x;
         const dy = e.clientY - lastPointerPos.current.y;
-
-        if (Math.hypot(dx, dy) > 3) {
-          hasDragged.current = true;
-        }
-
-        const dragSensitivity = 0.0036;
-        targetYaw.current -= dx * dragSensitivity;
-        targetPitch.current -= dy * dragSensitivity;
-        targetPitch.current = Math.max(-Math.PI / 2.5, Math.min(Math.PI / 2.5, targetPitch.current));
-
         lastPointerPos.current = { x: e.clientX, y: e.clientY };
+
+        const sensitivity = e.pointerType === 'touch' ? 0.0055 : 0.0038;
+        playerState.targetYaw -= dx * sensitivity;
+        targetPitch.current -= dy * sensitivity;
+      } else {
+        return;
       }
+      targetPitch.current = Math.max(-PITCH_LIMIT, Math.min(PITCH_LIMIT, targetPitch.current));
     };
 
-    const handlePointerUp = () => {
-      isPointerDown.current = false;
+    const handlePointerUp = (e: PointerEvent) => {
+      if (e.pointerId === lookPointerId.current) lookPointerId.current = null;
     };
 
     const handleDoubleClick = () => {
-      if (activeModal === null && document.pointerLockElement !== gl.domElement) {
-        gl.domElement.requestPointerLock?.();
+      if (activeModal === null && document.pointerLockElement !== dom) {
+        dom.requestPointerLock?.();
       }
     };
 
-    const handleContextMenu = (e: MouseEvent) => {
-      // Prevent context menu on canvas so right-click drag look is uninterrupted
-      e.preventDefault();
-    };
+    const handleContextMenu = (e: MouseEvent) => e.preventDefault();
 
-    const dom = gl.domElement;
     dom.addEventListener('pointerdown', handlePointerDown);
     window.addEventListener('pointermove', handlePointerMove);
     window.addEventListener('pointerup', handlePointerUp);
@@ -134,23 +183,19 @@ export const PlayerController: React.FC = () => {
     };
   }, [gl, activeModal, setPointerLocked]);
 
-  // Keyboard controls listener
+  // Keyboard controls
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      keysPressed.current[e.key.toLowerCase()] = true;
+      const key = e.key.toLowerCase();
+      keysPressed.current[key] = true;
 
-      // Shortcut Keys (only if no modal active)
-      if (activeModal === null) {
-        if (e.key.toLowerCase() === 'm') {
-          openModal('store_map');
-        } else if (e.key.toLowerCase() === 'b') {
-          openModal('cart_drawer');
-        } else if (e.key.toLowerCase() === 'e') {
-          // If near a product, quick pick into basket!
-          if (nearbyProduct) {
-            quickPickProduct(nearbyProduct);
-          }
-        }
+      const state = useStore.getState();
+      if (state.activeModal !== null) return;
+
+      if (key === 'm') state.openModal('store_map');
+      else if (key === 'b') state.openModal('cart_drawer');
+      else if ((key === 'f' || key === 'enter') && state.nearbyProduct) {
+        state.quickPickProduct(state.nearbyProduct);
       }
     };
 
@@ -158,247 +203,149 @@ export const PlayerController: React.FC = () => {
       keysPressed.current[e.key.toLowerCase()] = false;
     };
 
+    // Release all keys if the window loses focus (prevents "stuck walking")
+    const handleBlur = () => {
+      keysPressed.current = {};
+    };
+
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('keyup', handleKeyUp);
-
+    window.addEventListener('blur', handleBlur);
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
+      window.removeEventListener('blur', handleBlur);
     };
-  }, [activeModal, openModal, nearbyProduct, quickPickProduct]);
+  }, []);
 
-  // Collision detection checking
-  const checkCollisions = (newX: number, newZ: number): { x: number; z: number } => {
-    let x = newX;
-    let z = newZ;
+  useFrame((_, rawDelta) => {
+    const state = useStore.getState();
+    if (state.activeModal !== null) return;
 
-    // 1. Outer World Boundary Limits
-    if (z > 14) {
-      // Exterior street limits
-      x = Math.max(-18, Math.min(18, x));
-      z = Math.min(28, z);
-    } else {
-      // Inside Store limits
-      x = Math.max(-11.6, Math.min(11.6, x));
-      z = Math.max(-14.8, Math.min(14, z));
-    }
+    // Clamp delta so a dropped frame never teleports the player
+    const dt = Math.min(rawDelta, 0.05);
+    const keys = keysPressed.current;
 
-    // 2. Front Doorway Barrier (Doors are open at X: [-2.2, 2.2], but walls block else at Z: 14)
-    if (Math.abs(z - 14) < 0.35) {
-      if (Math.abs(x) > 2.2) {
-        z = z > 14 ? 14.3 : 13.7;
-      }
-    }
+    const isSprint = !!keys['shift'] || state.isSprinting;
+    const maxSpeed = isSprint ? RUN_SPEED : WALK_SPEED;
 
-    // 3. Left Shelf Barrier (X: -11.5, Z: -5.5 to 5.5)
-    if (x < -10.2 && z >= -5.5 && z <= 5.5) {
-      x = -10.2;
-    }
+    // ---------- Look (keyboard turning) ----------
+    const turnRate = (isSprint ? 2.8 : 2.1) * dt;
+    if (keys['arrowleft'] || keys['q']) playerState.targetYaw += turnRate;
+    if (keys['arrowright'] || keys['e']) playerState.targetYaw -= turnRate;
 
-    // 4. Right Shelf Barrier (X: 11.5, Z: -4.5 to 4.5)
-    if (x > 10.2 && z >= -4.5 && z <= 4.5) {
-      x = 10.2;
-    }
+    // Smoothly ease camera rotation towards target
+    const lookSmooth = damp(18, dt);
+    playerState.yaw += (playerState.targetYaw - playerState.yaw) * lookSmooth;
+    pitch.current += (targetPitch.current - pitch.current) * lookSmooth;
 
-    // 5. Tasting Bar Counter Obstacle (X: -6.8 to -2.2, Z: -11.0 to -8.8)
-    if (x >= -6.8 && x <= -2.2 && z >= -11.0 && z <= -8.8) {
-      // Push out to nearest side
-      if (Math.abs(z - -8.8) < Math.abs(z - -11.0)) z = -8.7;
-      else z = -11.1;
-    }
-
-    // 6. Checkout Counter Obstacle (X: 2.2 to 6.8, Z: -11.0 to -8.8)
-    if (x >= 2.2 && x <= 6.8 && z >= -11.0 && z <= -8.8) {
-      if (Math.abs(z - -8.8) < Math.abs(z - -11.0)) z = -8.7;
-      else z = -11.1;
-    }
-
-    // 7. FairChain Globe Center Plinth (Circle at 0, -13.5, Radius: 2.1)
-    const distToGlobe = Math.hypot(x, z - -13.5);
-    if (distToGlobe < 2.1) {
-      const angle = Math.atan2(z - -13.5, x);
-      x = Math.cos(angle) * 2.15;
-      z = -13.5 + Math.sin(angle) * 2.15;
-    }
-
-    return { x, z };
-  };
-
-  useFrame((_, delta) => {
-    // If modal is open, halt movement
-    if (activeModal !== null) return;
-
-    // Smooth camera damping: lerp from current to target
-    yaw.current = THREE.MathUtils.lerp(yaw.current, targetYaw.current, 0.35);
-    pitch.current = THREE.MathUtils.lerp(pitch.current, targetPitch.current, 0.35);
-
-    const isSprint = keysPressed.current['shift'] || isSprinting;
-    const maxSpeed = isSprint ? 8.6 : 5.4;
-    const turnSpeed = (isSprint ? 3.4 : 2.4) * delta;
-
-    // Smooth Keyboard Look Left / Right (ArrowLeft or Q / ArrowRight or E)
-    if (keysPressed.current['arrowleft'] || keysPressed.current['q']) {
-      targetYaw.current += turnSpeed;
-      if (targetPosition) setTargetPosition(null);
-    }
-    if (keysPressed.current['arrowright'] || keysPressed.current['e']) {
-      targetYaw.current -= turnSpeed;
-      if (targetPosition) setTargetPosition(null);
-    }
-
-    // Smooth Keyboard Tilt Up / Down (PageUp/R / PageDown/F)
-    if (keysPressed.current['pageup'] || keysPressed.current['r']) {
-      targetPitch.current = Math.min(Math.PI / 2.5, targetPitch.current + turnSpeed * 0.7);
-    }
-    if (keysPressed.current['pagedown'] || keysPressed.current['f']) {
-      targetPitch.current = Math.max(-Math.PI / 2.5, targetPitch.current - turnSpeed * 0.7);
-    }
-
-    useStore.setState({ playerRotationY: yaw.current });
-
+    // ---------- Movement input ----------
     let moveX = 0;
     let moveZ = 0;
+    if (keys['w'] || keys['arrowup']) moveZ -= 1;
+    if (keys['s'] || keys['arrowdown']) moveZ += 1;
+    if (keys['a']) moveX -= 1;
+    if (keys['d']) moveX += 1;
 
-    // 1. WASD & ArrowUp/ArrowDown Movement
-    if (keysPressed.current['w'] || keysPressed.current['arrowup']) moveZ -= 1;
-    if (keysPressed.current['s'] || keysPressed.current['arrowdown']) moveZ += 1;
-    if (keysPressed.current['a']) moveX -= 1; // Strafe Left
-    if (keysPressed.current['d']) moveX += 1; // Strafe Right
-
-    // 2. Mobile Touch Virtual Joystick Input
-    const joy = mobileJoystickInput;
-    if (Math.abs(joy.x) > 0.05 || Math.abs(joy.y) > 0.05) {
-      moveX += joy.x;
-      moveZ += joy.y;
+    const joyX = playerState.joyX;
+    const joyY = playerState.joyY;
+    if (Math.abs(joyX) > 0.08 || Math.abs(joyY) > 0.08) {
+      moveX += joyX;
+      moveZ += joyY;
     }
 
-    let currX = playerPosition[0];
-    let currZ = playerPosition[2];
+    inputVec.set(moveX, 0, moveZ);
+    const inputLen = Math.min(inputVec.length(), 1);
+    const targetPosition = state.targetPosition;
 
-    const inputVec = new THREE.Vector3(moveX, 0, moveZ);
-    const hasInput = inputVec.lengthSq() > 0.005;
-
-    if (hasInput) {
-      if (targetPosition) setTargetPosition(null);
-
-      // Normalize and orient relative to camera yaw
-      inputVec.normalize();
-      inputVec.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw.current);
-
-      const targetVel = inputVec.multiplyScalar(maxSpeed);
-      // Smooth acceleration damping
-      velocity.current.lerp(targetVel, 0.28);
+    if (inputLen > 0.05) {
+      if (targetPosition) state.setTargetPosition(null);
+      // Analog: joystick tilt controls speed
+      inputVec.normalize().applyAxisAngle(UP, playerState.yaw);
+      targetVel.copy(inputVec).multiplyScalar(maxSpeed * inputLen);
     } else if (targetPosition) {
-      // Click-to-move glide navigation
-      const dx = targetPosition[0] - currX;
-      const dz = targetPosition[2] - currZ;
+      // Click / tap-to-glide
+      const dx = targetPosition[0] - playerState.x;
+      const dz = targetPosition[2] - playerState.z;
       const dist = Math.hypot(dx, dz);
-
-      if (dist > 0.25) {
-        const dir = new THREE.Vector3(dx / dist, 0, dz / dist);
-        const glideSpeed = Math.min(maxSpeed, dist * 3.5);
-        velocity.current.lerp(dir.multiplyScalar(glideSpeed), 0.25);
+      if (dist > 0.2) {
+        const glideSpeed = Math.min(maxSpeed, dist * 3);
+        targetVel.set((dx / dist) * glideSpeed, 0, (dz / dist) * glideSpeed);
       } else {
-        velocity.current.set(0, 0, 0);
-        setTargetPosition(null);
+        targetVel.set(0, 0, 0);
+        state.setTargetPosition(null);
       }
     } else {
-      // Smooth deceleration damping
-      velocity.current.lerp(new THREE.Vector3(0, 0, 0), 0.3);
+      targetVel.set(0, 0, 0);
     }
 
-    // Apply smooth velocity to position
-    if (velocity.current.lengthSq() > 0.001) {
-      const stepX = currX + velocity.current.x * delta;
-      const stepZ = currZ + velocity.current.z * delta;
+    // Smooth acceleration / deceleration
+    velocity.current.lerp(targetVel, damp(inputLen > 0.05 ? 10 : 8, dt));
 
-      const resolved = checkCollisions(stepX, stepZ);
-      currX = resolved.x;
-      currZ = resolved.z;
+    const speed = velocity.current.length();
+    if (speed > 0.01) {
+      const resolved = checkCollisions(
+        playerState.x + velocity.current.x * dt,
+        playerState.z + velocity.current.z * dt
+      );
+      playerState.x = resolved.x;
+      playerState.z = resolved.z;
 
-      // Accumulate distance for footstep sound
-      moveDistanceAccumulator.current += velocity.current.length() * delta;
-      if (moveDistanceAccumulator.current > 1.35) {
+      moveDistanceAccumulator.current += speed * dt;
+      if (moveDistanceAccumulator.current > 1.5) {
         sounds.playFootstep();
         moveDistanceAccumulator.current = 0;
       }
-
-      setPlayerPosition([currX, 1.7, currZ]);
-
-      // Realistic Subtle Head Bobbing when walking
-      walkBobTimer.current += delta * (isSprint ? 13 : 9);
-      const bobOffset = Math.sin(walkBobTimer.current) * 0.025;
-      camera.position.y = 1.7 + bobOffset;
+      walkBobTimer.current += dt * (isSprint ? 12 : 8.5);
     } else {
-      camera.position.y = THREE.MathUtils.lerp(camera.position.y, 1.7, 0.1);
+      velocity.current.set(0, 0, 0);
     }
 
-    // Smooth camera updates
-    camera.position.x = THREE.MathUtils.lerp(camera.position.x, currX, 0.35);
-    camera.position.z = THREE.MathUtils.lerp(camera.position.z, currZ, 0.35);
+    // ---------- Camera ----------
+    const camDx = playerState.x - camera.position.x;
+    const camDz = playerState.z - camera.position.z;
+    if (camDx * camDx + camDz * camDz > 9) {
+      // Teleported: snap instead of sliding across the store
+      camera.position.x = playerState.x;
+      camera.position.z = playerState.z;
+      velocity.current.set(0, 0, 0);
+    } else {
+      const posSmooth = damp(20, dt);
+      camera.position.x += camDx * posSmooth;
+      camera.position.z += camDz * posSmooth;
+    }
 
-    // Apply rotation to camera
-    const euler = new THREE.Euler(pitch.current, yaw.current, 0, 'YXZ');
+    // Subtle head bob scaled by speed
+    const bobAmount = Math.min(speed / RUN_SPEED, 1) * 0.03;
+    const targetY = 1.7 + Math.sin(walkBobTimer.current) * bobAmount;
+    camera.position.y += (targetY - camera.position.y) * damp(12, dt);
+
+    euler.set(pitch.current, playerState.yaw, 0);
     camera.quaternion.setFromEuler(euler);
 
-    // Update inside/outside status
-    const isInside = currZ <= 14;
-    setIsInsideStore(isInside);
+    // ---------- Low-frequency world checks (every 8 frames) ----------
+    frameCounter.current++;
+    if (frameCounter.current % 8 !== 0) return;
 
-    // Dynamic Zone Determination based on coordinates
-    let detectedZone: typeof STORE_ZONES[0]['id'] = 'exterior';
-    if (!isInside) {
-      detectedZone = 'exterior';
-    } else if (currZ > 10) {
-      detectedZone = 'entrance';
-    } else if (currX < -7 && currZ >= -5 && currZ <= 5) {
-      detectedZone = 'beans_shelf';
-    } else if (currX > 7 && currZ >= 0 && currZ <= 5) {
-      detectedZone = 'capsules_shelf';
-    } else if (currX > 7 && currZ < 0 && currZ >= -5) {
-      detectedZone = 'bundles_shelf';
-    } else if (currX < -1 && currZ < -6 && currZ > -11) {
-      detectedZone = 'tasting_bar';
-    } else if (currX > 1 && currZ < -6 && currZ > -11) {
-      detectedZone = 'checkout_counter';
-    } else if (currX < -4 && currZ <= -11) {
-      detectedZone = 'subscription_lounge';
-    } else if (currX > 4 && currZ <= -11) {
-      detectedZone = 'helpdesk';
-    } else if (Math.abs(currX) <= 4 && currZ <= -11) {
-      detectedZone = 'fairchain_gallery';
-    } else if (currX < -3 && currZ > 5 && currZ <= 10) {
-      detectedZone = 'coffee_quiz';
-    } else if (currX > 3 && currZ > 5 && currZ <= 10) {
-      detectedZone = 'delivery_desk';
-    }
+    const x = playerState.x;
+    const z = playerState.z;
+    state.setIsInsideStore(z <= 14);
+    state.setCurrentZone(detectZone(x, z));
 
-    if (detectedZone !== currentZone) {
-      setCurrentZone(detectedZone);
-      const zoneObj = STORE_ZONES.find((z) => z.id === detectedZone);
-      if (zoneObj && detectedZone !== 'exterior') {
-        showToast(`📍 ${zoneObj.title} • ${zoneObj.subtitle}`);
-      }
-    }
-
-    // Dynamic Product Proximity Detection for Quick Pick
-    let closestDist = 999;
-    let closestProd: typeof MOYEE_PRODUCTS[0] | null = null;
-
+    // Nearest product for quick-pick (store only updated when it changes)
+    let closestDist = Infinity;
+    let closestProd: (typeof MOYEE_PRODUCTS)[number] | null = null;
     for (const prod of MOYEE_PRODUCTS) {
-      const dist = Math.hypot(currX - prod.shelfLocation.position[0], currZ - prod.shelfLocation.position[2]);
-      if (dist < closestDist) {
-        closestDist = dist;
+      const d = Math.hypot(x - prod.shelfLocation.position[0], z - prod.shelfLocation.position[2]);
+      if (d < closestDist) {
+        closestDist = d;
         closestProd = prod;
       }
     }
-
-    if (closestDist < 3.8 && closestProd) {
-      if (nearbyProduct?.id !== closestProd.id) {
-        setNearbyProduct(closestProd);
-      }
-    } else if (closestDist >= 3.8 && nearbyProduct !== null) {
-      setNearbyProduct(null);
+    const nearbyId = closestProd && closestDist < PRODUCT_PICK_RADIUS ? closestProd.id : null;
+    if (nearbyId !== lastNearbyId.current) {
+      lastNearbyId.current = nearbyId;
+      state.setNearbyProduct(nearbyId ? closestProd : null);
     }
   });
 

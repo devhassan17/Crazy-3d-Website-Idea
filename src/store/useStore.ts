@@ -2,6 +2,18 @@ import { create } from 'zustand';
 import { Product, CartItem, StoreZoneId, ModalType, OdooOrder, WeightOption, GrindType } from '../types';
 import { MOYEE_PRODUCTS, STORE_ZONES } from '../data/products';
 import { sounds } from '../utils/audio';
+import { playerState } from '../utils/playerState';
+
+/** Snapshot of the live (mutable) player position for UI such as the store map */
+const livePlayerPosition = (): [number, number, number] => [playerState.x, 1.7, playerState.z];
+
+/** Instantly move the player (used by teleports / entering the store) */
+const placePlayer = (pos: [number, number, number], yaw: number) => {
+  playerState.x = pos[0];
+  playerState.z = pos[2];
+  playerState.yaw = yaw;
+  playerState.targetYaw = yaw;
+};
 
 interface StoreState {
   // Navigation & World
@@ -110,19 +122,27 @@ export const useStore = create<StoreState>((set, get) => ({
   setTargetPosition: (pos) => set({ targetPosition: pos }),
   setCameraTarget: (target) => set({ cameraTarget: target }),
   setPlayerRotationY: (rot) => set({ playerRotationY: rot }),
+  // Rotation lives in the mutable playerState; the camera eases towards targetYaw
   rotatePlayerY: (deltaAngle) => {
-    const currentRot = get().playerRotationY;
-    set({ playerRotationY: currentRot + deltaAngle });
+    playerState.targetYaw += deltaAngle;
   },
   turnAround180: () => {
-    const currentRot = get().playerRotationY;
-    set({ playerRotationY: currentRot + Math.PI });
+    playerState.targetYaw += Math.PI;
   },
-  setCurrentZone: (zone) => set({ currentZone: zone }),
-  setIsInsideStore: (inside) => set({ isInsideStore: inside }),
+  // Only notify subscribers when the value actually changes
+  setCurrentZone: (zone) => {
+    if (get().currentZone !== zone) set({ currentZone: zone });
+  },
+  setIsInsideStore: (inside) => {
+    if (get().isInsideStore !== inside) set({ isInsideStore: inside });
+  },
   setPointerLocked: (locked) => set({ isPointerLocked: locked }),
   setControlsMode: (mode) => set({ controlsMode: mode }),
-  setMobileJoystickInput: (input) => set({ mobileJoystickInput: input }),
+  // Non-reactive: called on every touchmove, so it must not re-render the app
+  setMobileJoystickInput: (input) => {
+    playerState.joyX = input.x;
+    playerState.joyY = input.y;
+  },
   toggleSprint: () => set((state) => ({ isSprinting: !state.isSprinting })),
   setNearbyProduct: (product) => set({ nearbyProduct: product }),
   quickPickProduct: (product) => {
@@ -142,6 +162,8 @@ export const useStore = create<StoreState>((set, get) => ({
 
   enterStoreCinematic: () => {
     sounds.playDoorChime();
+    sounds.startStoreAmbiance();
+    placePlayer([0, 1.7, 12], 0);
     set({
       hasSeenWelcome: true,
       isInsideStore: true,
@@ -158,6 +180,7 @@ export const useStore = create<StoreState>((set, get) => ({
     if (zone) {
       sounds.playClick();
       const isInside = zoneId !== 'exterior';
+      placePlayer(zone.position, zone.rotationY);
       set({
         currentZone: zoneId,
         playerPosition: [...zone.position],
@@ -174,12 +197,12 @@ export const useStore = create<StoreState>((set, get) => ({
   selectedProduct: null,
   openModal: (modal) => {
     sounds.playClick();
-    set({ activeModal: modal });
+    set({ activeModal: modal, playerPosition: livePlayerPosition() });
   },
   closeModal: () => set({ activeModal: null, selectedProduct: null }),
   openProductDetail: (product) => {
     sounds.playClick();
-    set({ activeModal: 'product_detail', selectedProduct: product });
+    set({ activeModal: 'product_detail', selectedProduct: product, playerPosition: livePlayerPosition() });
   },
 
   // Cart

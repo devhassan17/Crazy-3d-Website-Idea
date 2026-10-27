@@ -1,15 +1,9 @@
-import React, { useMemo } from 'react';
-import { Html } from '@react-three/drei';
-import * as THREE from 'three';
+import React from 'react';
 import { useStore } from '../../store/useStore';
+import { ProximityHtml } from './ProximityHtml';
 
 export const SubscriptionLounge: React.FC = () => {
-  const { playerPosition, openModal, activeModal } = useStore();
-
-  const playerVec = useMemo(() => new THREE.Vector3(...playerPosition), [playerPosition]);
-  const loungeVec = useMemo(() => new THREE.Vector3(-8, 1.7, -13), []);
-  const distance = playerVec.distanceTo(loungeVec);
-  const isNearby = distance < 4.5;
+  const { openModal } = useStore();
 
   return (
     <group position={[-8, 0, -13]}>
@@ -100,7 +94,7 @@ export const SubscriptionLounge: React.FC = () => {
         </mesh>
 
         {/* Digital Lounge Billboard */}
-        <Html position={[0, 0, 0.1]} transform distanceFactor={6} center>
+        <ProximityHtml radius={5.0} position={[0, 0, 0.1]} transform distanceFactor={6} center>
           <div className="bg-moyee-charcoal/95 border-2 border-moyee-pink p-5 rounded-2xl w-80 text-center select-none shadow-2xl">
             <span className="bg-moyee-yellow text-moyee-charcoal text-[10px] font-bold font-oswald uppercase px-2.5 py-1 rounded-full">
               FREE SHIPPING ALWAYS
@@ -115,25 +109,23 @@ export const SubscriptionLounge: React.FC = () => {
               Tap Screen to Customize
             </div>
           </div>
-        </Html>
+        </ProximityHtml>
       </group>
 
       {/* Proximity Interaction Prompt */}
-      {isNearby && activeModal === null && (
-        <Html position={[0, 2.0, 0]} center distanceFactor={10}>
-          <button
-            onClick={() => openModal('subscription_lounge')}
-            className="flex flex-col items-center group cursor-pointer transition-transform transform hover:scale-105 select-none animate-bounce"
-          >
-            <div className="bg-moyee-pink text-white font-oswald text-sm font-bold uppercase tracking-wider px-4 py-2 rounded-full shadow-2xl flex items-center space-x-2 border-2 border-moyee-yellow">
-              <span>☕ ENTER SUBSCRIPTION CLUB</span>
-            </div>
-            <div className="bg-moyee-charcoal text-white text-[10px] font-bold font-oswald uppercase px-2 py-0.5 rounded-md mt-1 shadow-md">
-              Click to Setup Automatic Delivery
-            </div>
-          </button>
-        </Html>
-      )}
+      <ProximityHtml radius={3.5} position={[0, 2.0, 0]} center distanceFactor={10}>
+        <button
+          onClick={() => openModal('subscription_lounge')}
+          className="flex flex-col items-center group cursor-pointer transition-transform transform hover:scale-105 select-none animate-bounce"
+        >
+          <div className="bg-moyee-pink text-white font-oswald text-sm font-bold uppercase tracking-wider px-4 py-2 rounded-full shadow-2xl flex items-center space-x-2 border-2 border-moyee-yellow">
+            <span>☕ ENTER SUBSCRIPTION CLUB</span>
+          </div>
+          <div className="bg-moyee-charcoal text-white text-[10px] font-bold font-oswald uppercase px-2 py-0.5 rounded-md mt-1 shadow-md">
+            Click to Setup Automatic Delivery
+          </div>
+        </button>
+      </ProximityHtml>
     </group>
   );
 };

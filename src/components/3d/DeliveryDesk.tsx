@@ -1,15 +1,9 @@
-import React, { useMemo } from 'react';
-import { Html } from '@react-three/drei';
-import * as THREE from 'three';
+import React from 'react';
 import { useStore } from '../../store/useStore';
+import { ProximityHtml } from './ProximityHtml';
 
 export const DeliveryDesk: React.FC = () => {
-  const { playerPosition, openModal, activeModal } = useStore();
-
-  const playerVec = useMemo(() => new THREE.Vector3(...playerPosition), [playerPosition]);
-  const deskVec = useMemo(() => new THREE.Vector3(6.5, 1.7, 7.5), []);
-  const distance = playerVec.distanceTo(deskVec);
-  const isNearby = distance < 4.0;
+  const { openModal } = useStore();
 
   return (
     <group position={[6.5, 0, 7.5]} rotation={[0, -Math.PI / 4, 0]}>
@@ -43,31 +37,29 @@ export const DeliveryDesk: React.FC = () => {
 
       {/* Overhead Delivery Banner */}
       <group position={[0, 2.6, 0]}>
-        <Html center transform distanceFactor={5}>
+        <ProximityHtml radius={5.0} center transform distanceFactor={5}>
           <div className="bg-moyee-charcoal/90 border-2 border-moyee-pink px-4 py-1.5 rounded-xl text-center select-none shadow-xl">
             <span className="text-sm">🚚</span>
             <h4 className="font-oswald text-xs font-bold text-white uppercase">ORDER TRACKING</h4>
             <p className="text-[10px] text-moyee-yellow font-condensed">DISPATCH STATUS & COURIER</p>
           </div>
-        </Html>
+        </ProximityHtml>
       </group>
 
       {/* Proximity Interaction Prompt */}
-      {isNearby && activeModal === null && (
-        <Html position={[0, 2.0, 0]} center distanceFactor={10}>
-          <button
-            onClick={() => openModal('delivery_tracking')}
-            className="flex flex-col items-center group cursor-pointer transition-transform transform hover:scale-105 select-none animate-bounce"
-          >
-            <div className="bg-moyee-pink text-white font-oswald text-sm font-bold uppercase tracking-wider px-4 py-2 rounded-full shadow-2xl flex items-center space-x-2 border-2 border-moyee-yellow">
-              <span>📦 TRACK YOUR ORDER</span>
-            </div>
-            <div className="bg-moyee-charcoal text-white text-[10px] font-bold font-oswald uppercase px-2 py-0.5 rounded-md mt-1 shadow-md">
-              Click to Track Odoo Shipments
-            </div>
-          </button>
-        </Html>
-      )}
+      <ProximityHtml radius={3.5} position={[0, 2.0, 0]} center distanceFactor={10}>
+        <button
+          onClick={() => openModal('delivery_tracking')}
+          className="flex flex-col items-center group cursor-pointer transition-transform transform hover:scale-105 select-none animate-bounce"
+        >
+          <div className="bg-moyee-pink text-white font-oswald text-sm font-bold uppercase tracking-wider px-4 py-2 rounded-full shadow-2xl flex items-center space-x-2 border-2 border-moyee-yellow">
+            <span>📦 TRACK YOUR ORDER</span>
+          </div>
+          <div className="bg-moyee-charcoal text-white text-[10px] font-bold font-oswald uppercase px-2 py-0.5 rounded-md mt-1 shadow-md">
+            Click to Track Odoo Shipments
+          </div>
+        </button>
+      </ProximityHtml>
     </group>
   );
 };

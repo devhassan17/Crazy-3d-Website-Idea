@@ -1,12 +1,12 @@
-import React, { useMemo, useRef } from 'react';
-import { Html } from '@react-three/drei';
+import React, { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { useStore } from '../../store/useStore';
 import { sounds } from '../../utils/audio';
+import { ProximityHtml } from './ProximityHtml';
 
 export const TastingBar: React.FC = () => {
-  const { playerPosition, openModal, activeModal } = useStore();
+  const { openModal } = useStore();
   const steamRef = useRef<THREE.Group>(null);
 
   // Animate rising steam
@@ -20,11 +20,6 @@ export const TastingBar: React.FC = () => {
       });
     }
   });
-
-  const playerVec = useMemo(() => new THREE.Vector3(...playerPosition), [playerPosition]);
-  const barVec = useMemo(() => new THREE.Vector3(-4.5, 1.7, -9.5), []);
-  const distance = playerVec.distanceTo(barVec);
-  const isNearby = distance < 4.5;
 
   const handleBaristaInteract = () => {
     sounds.playSteamHiss();
@@ -182,7 +177,7 @@ export const TastingBar: React.FC = () => {
           <boxGeometry args={[4.2, 0.9, 0.15]} />
           <meshStandardMaterial color="#111827" roughness={0.3} />
         </mesh>
-        <Html position={[0, 0, 0.09]} center transform distanceFactor={7}>
+        <ProximityHtml radius={5.5} position={[0, 0, 0.09]} center transform distanceFactor={7}>
           <div className="bg-moyee-charcoal/90 border-2 border-moyee-pink px-6 py-2 rounded-xl text-center select-none shadow-2xl">
             <h3 className="font-oswald text-xl font-bold uppercase tracking-wider text-white">
               COFFEE TASTING & BREW BAR
@@ -191,7 +186,7 @@ export const TastingBar: React.FC = () => {
               MEET BARISTA AMARA • LIVE ROAST SAMPLING
             </p>
           </div>
-        </Html>
+        </ProximityHtml>
         <spotLight
           position={[0, 0, 0]}
           target-position={[0, -3.8, 0]}
@@ -203,21 +198,19 @@ export const TastingBar: React.FC = () => {
       </group>
 
       {/* Proximity Interaction Prompt */}
-      {isNearby && activeModal === null && (
-        <Html position={[0, 2.2, 0]} center distanceFactor={10}>
-          <button
-            onClick={handleBaristaInteract}
-            className="flex flex-col items-center group cursor-pointer transition-transform transform hover:scale-105 select-none animate-bounce"
-          >
-            <div className="bg-moyee-yellow text-moyee-charcoal font-oswald text-sm font-bold uppercase tracking-wider px-4 py-2 rounded-full shadow-2xl flex items-center space-x-2 border-2 border-moyee-pink">
-              <span>☕ TALK TO BARISTA AMARA</span>
-            </div>
-            <div className="bg-moyee-charcoal text-white text-[10px] font-bold font-oswald uppercase px-2 py-0.5 rounded-md mt-1 shadow-md">
-              Click for Coffee Tasting & Recommendations
-            </div>
-          </button>
-        </Html>
-      )}
+      <ProximityHtml radius={3.5} position={[0, 2.2, 0]} center distanceFactor={10}>
+        <button
+          onClick={handleBaristaInteract}
+          className="flex flex-col items-center group cursor-pointer transition-transform transform hover:scale-105 select-none animate-bounce"
+        >
+          <div className="bg-moyee-yellow text-moyee-charcoal font-oswald text-sm font-bold uppercase tracking-wider px-4 py-2 rounded-full shadow-2xl flex items-center space-x-2 border-2 border-moyee-pink">
+            <span>☕ TALK TO BARISTA AMARA</span>
+          </div>
+          <div className="bg-moyee-charcoal text-white text-[10px] font-bold font-oswald uppercase px-2 py-0.5 rounded-md mt-1 shadow-md">
+            Click for Coffee Tasting & Recommendations
+          </div>
+        </button>
+      </ProximityHtml>
     </group>
   );
 };

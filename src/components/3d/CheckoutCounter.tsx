@@ -1,17 +1,10 @@
-import React, { useMemo } from 'react';
-import { Html } from '@react-three/drei';
-import * as THREE from 'three';
+import React from 'react';
 import { useStore } from '../../store/useStore';
+import { ProximityHtml } from './ProximityHtml';
 
 export const CheckoutCounter: React.FC = () => {
-  const { playerPosition, openModal, getCartTotals, activeModal } = useStore();
+  const { openModal, getCartTotals } = useStore();
   const totals = getCartTotals();
-
-  // Distance check for proximity highlight
-  const playerVec = useMemo(() => new THREE.Vector3(...playerPosition), [playerPosition]);
-  const counterVec = useMemo(() => new THREE.Vector3(4.5, 1.7, -9.5), []);
-  const distance = playerVec.distanceTo(counterVec);
-  const isNearby = distance < 4.5;
 
   return (
     <group position={[4.5, 0, -10]} rotation={[0, Math.PI, 0]}>
@@ -78,7 +71,7 @@ export const CheckoutCounter: React.FC = () => {
         </mesh>
 
         {/* Live POS Display using HTML */}
-        <Html position={[0, 0.32, 0.03]} rotation={[-0.4, 0, 0]} transform distanceFactor={4}>
+        <ProximityHtml radius={3.5} position={[0, 0.32, 0.03]} rotation={[-0.4, 0, 0]} transform distanceFactor={4}>
           <div className="bg-moyee-dark text-white p-2 rounded w-44 font-condensed text-[10px] select-none border border-moyee-pink shadow-lg">
             <div className="flex justify-between items-center border-b border-gray-700 pb-1">
               <span className="font-bold text-moyee-yellow">ODOO 18 POS</span>
@@ -95,7 +88,7 @@ export const CheckoutCounter: React.FC = () => {
               </div>
             </div>
           </div>
-        </Html>
+        </ProximityHtml>
       </group>
 
       {/* Card Payment Pin Pad Terminal */}
@@ -137,7 +130,7 @@ export const CheckoutCounter: React.FC = () => {
           <boxGeometry args={[4.2, 0.9, 0.15]} />
           <meshStandardMaterial color="#111827" roughness={0.3} />
         </mesh>
-        <Html position={[0, 0, 0.09]} center transform distanceFactor={7}>
+        <ProximityHtml radius={5.5} position={[0, 0, 0.09]} center transform distanceFactor={7}>
           <div className="bg-moyee-charcoal/90 border-2 border-moyee-yellow px-6 py-2 rounded-xl text-center select-none shadow-2xl">
             <h3 className="font-oswald text-xl font-bold uppercase tracking-wider text-white">
               CHECKOUT & PAYMENT
@@ -146,7 +139,7 @@ export const CheckoutCounter: React.FC = () => {
               SECURE ODOO 18 CHECKOUT GATEWAY
             </p>
           </div>
-        </Html>
+        </ProximityHtml>
         {/* Spot light onto counter */}
         <spotLight
           position={[0, 0, 0]}
@@ -161,21 +154,19 @@ export const CheckoutCounter: React.FC = () => {
       {/* ======================================================== */}
       {/* 5. INTERACTIVE PROXIMITY CALLOUT                         */}
       {/* ======================================================== */}
-      {isNearby && activeModal === null && (
-        <Html position={[0, 2.2, 0]} center distanceFactor={10}>
-          <button
-            onClick={() => openModal('checkout')}
-            className="flex flex-col items-center group cursor-pointer transition-transform transform hover:scale-105 select-none animate-bounce"
-          >
-            <div className="bg-moyee-pink text-white font-oswald text-sm font-bold uppercase tracking-wider px-4 py-2 rounded-full shadow-2xl flex items-center space-x-2 border-2 border-moyee-yellow">
-              <span>💳 PAY & REVIEW BASKET ({totals.itemCount})</span>
-            </div>
-            <div className="bg-moyee-charcoal text-moyee-yellow text-[10px] font-bold font-oswald uppercase px-2 py-0.5 rounded-md mt-1 shadow-md">
-              Click to Open Checkout Counter
-            </div>
-          </button>
-        </Html>
-      )}
+      <ProximityHtml radius={3.5} position={[0, 2.2, 0]} center distanceFactor={10}>
+        <button
+          onClick={() => openModal('checkout')}
+          className="flex flex-col items-center group cursor-pointer transition-transform transform hover:scale-105 select-none animate-bounce"
+        >
+          <div className="bg-moyee-pink text-white font-oswald text-sm font-bold uppercase tracking-wider px-4 py-2 rounded-full shadow-2xl flex items-center space-x-2 border-2 border-moyee-yellow">
+            <span>💳 PAY & REVIEW BASKET ({totals.itemCount})</span>
+          </div>
+          <div className="bg-moyee-charcoal text-moyee-yellow text-[10px] font-bold font-oswald uppercase px-2 py-0.5 rounded-md mt-1 shadow-md">
+            Click to Open Checkout Counter
+          </div>
+        </button>
+      </ProximityHtml>
     </group>
   );
 };

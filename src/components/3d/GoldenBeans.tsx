@@ -1,8 +1,8 @@
 import React, { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { useStore } from '../../store/useStore';
+import { ProximityHtml } from './ProximityHtml';
 
 interface BeanItem {
   id: string;
@@ -98,7 +98,7 @@ export const GoldenBeans: React.FC = () => {
             <pointLight color="#FFD700" intensity={4} distance={2} />
 
             {/* Floating interactive indicator */}
-            <Html position={[0, 0.35, 0]} center distanceFactor={8}>
+            <ProximityHtml radius={2.8} position={[0, 0.35, 0]} center distanceFactor={8}>
               <div
                 onClick={(e) => {
                   e.stopPropagation();
@@ -108,7 +108,7 @@ export const GoldenBeans: React.FC = () => {
               >
                 ✨ Collect Golden Bean!
               </div>
-            </Html>
+            </ProximityHtml>
           </group>
         );
       })}
