@@ -13,6 +13,7 @@ const placePlayer = (pos: [number, number, number], yaw: number) => {
   playerState.z = pos[2];
   playerState.yaw = yaw;
   playerState.targetYaw = yaw;
+  playerState.characterYaw = yaw + Math.PI;
 };
 
 interface StoreState {
@@ -30,6 +31,9 @@ interface StoreState {
   isSprinting: boolean;
   nearbyProduct: Product | null;
   toastMessage: string | null;
+  cameraMode: 'third_person' | 'first_person';
+  isDriving: boolean;
+  nearCar: boolean;
 
   // Actions for Navigation
   setPlayerPosition: (pos: [number, number, number]) => void;
@@ -44,6 +48,9 @@ interface StoreState {
   setControlsMode: (mode: 'first_person' | 'click_to_move' | 'mobile_touch') => void;
   setMobileJoystickInput: (input: { x: number; y: number }) => void;
   toggleSprint: () => void;
+  toggleCameraMode: () => void;
+  setNearCar: (near: boolean) => void;
+  toggleDriving: () => void;
   setNearbyProduct: (product: Product | null) => void;
   quickPickProduct: (product: Product) => void;
   showToast: (msg: string) => void;
@@ -117,6 +124,9 @@ export const useStore = create<StoreState>((set, get) => ({
   isSprinting: false,
   nearbyProduct: null,
   toastMessage: null,
+  cameraMode: 'third_person',
+  isDriving: false,
+  nearCar: false,
 
   setPlayerPosition: (pos) => set({ playerPosition: pos }),
   setTargetPosition: (pos) => set({ targetPosition: pos }),
@@ -144,6 +154,33 @@ export const useStore = create<StoreState>((set, get) => ({
     playerState.joyY = input.y;
   },
   toggleSprint: () => set((state) => ({ isSprinting: !state.isSprinting })),
+  toggleCameraMode: () => {
+    sounds.playClick();
+    const next = get().cameraMode === 'third_person' ? 'first_person' : 'third_person';
+    playerState.cameraMode = next;
+    set({ cameraMode: next });
+    get().showToast(next === 'third_person' ? '🎥 Camera: GTA V 3rd-Person View' : '👁️ Camera: 1st-Person View');
+  },
+  setNearCar: (near) => {
+    if (get().nearCar !== near) set({ nearCar: near });
+  },
+  toggleDriving: () => {
+    if (get().isDriving) {
+      sounds.playClick();
+      playerState.isDriving = false;
+      playerState.carSpeed = 0;
+      playerState.x = playerState.carX;
+      playerState.z = Math.min(18.8, playerState.carZ - 2.2);
+      set({ isDriving: false });
+      get().showToast('🚶 Exited Vehicle — On Foot');
+    } else if (!get().isInsideStore) {
+      sounds.playCarEngine();
+      playerState.isDriving = true;
+      playerState.cameraMode = 'third_person';
+      set({ isDriving: true, cameraMode: 'third_person', targetPosition: null });
+      get().showToast('🏎️ Driving Pegassi GT — [W/S] Throttle • [A/D] Steer • [G] Exit');
+    }
+  },
   setNearbyProduct: (product) => set({ nearbyProduct: product }),
   quickPickProduct: (product) => {
     const defaultWeight = product.weights.find((w) => w.isDefault)?.label || product.weights[0].label;
@@ -163,10 +200,12 @@ export const useStore = create<StoreState>((set, get) => ({
   enterStoreCinematic: () => {
     sounds.playDoorChime();
     sounds.startStoreAmbiance();
+    playerState.isDriving = false;
     placePlayer([0, 1.7, 12], 0);
     set({
       hasSeenWelcome: true,
       isInsideStore: true,
+      isDriving: false,
       currentZone: 'entrance',
       playerPosition: [0, 1.7, 12],
       cameraTarget: [0, 2.0, 0],
@@ -180,9 +219,11 @@ export const useStore = create<StoreState>((set, get) => ({
     if (zone) {
       sounds.playClick();
       const isInside = zoneId !== 'exterior';
+      playerState.isDriving = false;
       placePlayer(zone.position, zone.rotationY);
       set({
         currentZone: zoneId,
+        isDriving: false,
         playerPosition: [...zone.position],
         cameraTarget: [...zone.cameraTarget],
         playerRotationY: zone.rotationY,

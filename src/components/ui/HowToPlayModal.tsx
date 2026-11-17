@@ -78,13 +78,13 @@ export const HowToPlayModal: React.FC = () => {
             </div>
             <div className="grid grid-cols-3 gap-2 mt-2">
               <div className="bg-moyee-dark p-2 rounded-xl border border-gray-700 text-center">
-                <span className="font-bold text-moyee-pink">M</span>: Open Store Map
+                <span className="font-bold text-yellow-400">V</span>: 1st / 3rd Person Cam
               </div>
               <div className="bg-moyee-dark p-2 rounded-xl border border-gray-700 text-center">
-                <span className="font-bold text-moyee-yellow">B</span>: Open Basket
+                <span className="font-bold text-red-400">G</span>: Drive / Exit Sports Car
               </div>
               <div className="bg-moyee-dark p-2 rounded-xl border border-gray-700 text-center">
-                <span className="font-bold text-green-400">E</span>: Quick-Pick Product
+                <span className="font-bold text-emerald-400">M / B</span>: Map & Inventory
               </div>
             </div>
           </div>

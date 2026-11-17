@@ -224,9 +224,9 @@ export const MobileControls: React.FC = () => {
       )}
 
       {/* ======================================================== */}
-      {/* 3. VIRTUAL JOYSTICK (Bottom-Left)                         */}
+      {/* 3. VIRTUAL JOYSTICK (Above Radar on Bottom-Left)         */}
       {/* ======================================================== */}
-      <div className="fixed bottom-20 left-4 sm:left-8 z-30 pointer-events-none select-none">
+      <div className="fixed bottom-44 left-4 sm:left-6 z-30 pointer-events-none select-none">
         <div
           ref={joystickBaseRef}
           onTouchStart={handleTouchStart}
@@ -271,7 +271,7 @@ export const MobileControls: React.FC = () => {
       {/* ======================================================== */}
       {/* 4. MOBILE ACTION BUTTONS (Bottom-Right Cluster)          */}
       {/* ======================================================== */}
-      <div className="fixed bottom-20 right-4 sm:right-8 z-30 pointer-events-none flex flex-col items-end space-y-2 select-none">
+      <div className="fixed bottom-32 right-4 sm:right-6 z-30 pointer-events-none flex flex-col items-end space-y-2 select-none">
         {/* Sprint / Fast Run Toggle */}
         <button
           onClick={toggleSprint}
