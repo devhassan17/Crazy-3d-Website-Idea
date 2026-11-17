@@ -77,7 +77,7 @@ export const ProductDetailModal: React.FC = () => {
               <div className="flex justify-between items-center">
                 <div className="w-4 h-4 rounded-full bg-black/40 border border-white/30" />
                 <span className="font-oswald text-[10px] text-white/80 font-bold uppercase tracking-wider">
-                  Moyee Coffee
+                  Origin Roastery
                 </span>
               </div>
 

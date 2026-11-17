@@ -351,7 +351,7 @@ export const useStore = create<StoreState>((set, get) => ({
       items: [{ name: 'Triple Blend 1kg', qty: 2, price: 23.00 }],
       total: 46.00,
       carrier: 'PostNL Green Express',
-      trackingNumber: '3SMOYEE9876543NL',
+      trackingNumber: '3SORIGIN9876543NL',
       originFacility: 'Nairobi Roastery, Kenya'
     },
     {
@@ -364,7 +364,7 @@ export const useStore = create<StoreState>((set, get) => ({
       ],
       total: 45.00,
       carrier: 'DHL Climate Protect',
-      trackingNumber: '3SMOYEE1122334NL',
+      trackingNumber: '3SORIGIN1122334NL',
       originFacility: 'Addis Ababa ISO Facility, Ethiopia'
     }
   ],
@@ -375,5 +375,5 @@ export const useStore = create<StoreState>((set, get) => ({
     return found || null;
   },
 
-  checkoutUrl: 'https://www.moyeecoffee.com/shop/cart'
+  checkoutUrl: '#checkout'
 }));

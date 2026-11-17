@@ -1,6 +1,6 @@
 import React, { Suspense } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { Sky, ContactShadows } from '@react-three/drei';
+import { Canvas, useFrame } from '@react-three/fiber';
+import { Sky, Stars, ContactShadows, Environment, Lightformer } from '@react-three/drei';
 import * as THREE from 'three';
 import { useStore } from '../../store/useStore';
 import { StoreBuilding } from './StoreBuilding';
@@ -15,15 +15,13 @@ import { DeliveryDesk } from './DeliveryDesk';
 import { GoldenBeans } from './GoldenBeans';
 import { PlayerController } from './PlayerController';
 
-import { useFrame } from '@react-three/fiber';
-
 // Animated Destination Floor Ring when clicking to glide
 const FloorDestinationBeacon: React.FC<{ target: [number, number, number] }> = ({ target }) => {
   const ringRef = React.useRef<THREE.Mesh>(null);
   useFrame(({ clock }) => {
     if (ringRef.current) {
       const t = clock.getElapsedTime();
-      const s = 1 + Math.sin(t * 6) * 0.18;
+      const s = 1 + Math.sin(t * 6) * 0.16;
       ringRef.current.scale.set(s, s, s);
       ringRef.current.rotation.z += 0.02;
     }
@@ -32,23 +30,27 @@ const FloorDestinationBeacon: React.FC<{ target: [number, number, number] }> = (
   return (
     <group position={[target[0], 0.06, target[2]]} rotation={[-Math.PI / 2, 0, 0]}>
       <mesh ref={ringRef}>
-        <ringGeometry args={[0.35, 0.5, 32]} />
-        <meshBasicMaterial color="#FFD900" transparent opacity={0.85} side={THREE.DoubleSide} />
+        <ringGeometry args={[0.32, 0.46, 32]} />
+        <meshBasicMaterial color="#F59E0B" transparent opacity={0.85} side={THREE.DoubleSide} />
       </mesh>
       <mesh>
-        <circleGeometry args={[0.16, 24]} />
-        <meshBasicMaterial color="#E5007D" transparent opacity={0.9} side={THREE.DoubleSide} />
+        <circleGeometry args={[0.14, 24]} />
+        <meshBasicMaterial color="#FFFBEB" transparent opacity={0.9} side={THREE.DoubleSide} />
       </mesh>
     </group>
   );
 };
 
 export const WorldScene: React.FC = () => {
-  const { dayNightMode, setTargetPosition, targetPosition, activeModal } = useStore();
+  // Fine-grained Zustand selectors so WorldScene never re-renders on player movement
+  const dayNightMode = useStore((s) => s.dayNightMode);
+  const setTargetPosition = useStore((s) => s.setTargetPosition);
+  const targetPosition = useStore((s) => s.targetPosition);
+  const activeModal = useStore((s) => s.activeModal);
+
   const isNight = dayNightMode === 'night';
 
   const handleFloorClick = (e: { point: THREE.Vector3; stopPropagation: () => void; delta?: number }) => {
-    // Only glide if no modal is active and pointer didn't drag to look around
     if (activeModal === null && (!e.delta || e.delta < 6)) {
       setTargetPosition([e.point.x, 1.7, e.point.z]);
     }
@@ -58,63 +60,101 @@ export const WorldScene: React.FC = () => {
     <div className="w-full h-full relative" style={{ touchAction: 'none' }}>
       <Canvas
         shadows
-        dpr={[1, 1.75]}
+        dpr={[1, 1.5]}
         performance={{ min: 0.6 }}
-        camera={{ fov: 65, near: 0.1, far: 120, position: [0, 1.7, 24] }}
+        camera={{ fov: 65, near: 0.1, far: 130, position: [0, 1.7, 23] }}
         gl={{
           antialias: true,
+          powerPreference: 'high-performance',
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: isNight ? 1.3 : 1.15
+          toneMappingExposure: isNight ? 1.15 : 1.08
         }}
         className="w-full h-full"
       >
         <Suspense fallback={null}>
           {/* ======================================================== */}
-          {/* 1. SKY & ENVIRONMENTAL ATMOSPHERE                        */}
+          {/* 1. ATMOSPHERIC SKY, FOG & PBR ENVIRONMENT REFLECTIONS    */}
           {/* ======================================================== */}
+          <color attach="background" args={[isNight ? '#060911' : '#C8DCEB']} />
+          <fog attach="fog" args={[isNight ? '#060911' : '#D5E3EE', 32, 115]} />
+
           {isNight ? (
-            <color attach="background" args={['#080C14']} />
+            <Stars radius={80} depth={40} count={1800} factor={3.5} saturation={0.2} fade speed={0.5} />
           ) : (
             <Sky
               distance={450000}
-              sunPosition={[25, 40, 35]}
-              inclination={0.6}
-              azimuth={0.25}
-              turbidity={8}
-              rayleigh={2}
+              sunPosition={[35, 18, 28]}
+              inclination={0.52}
+              azimuth={0.22}
+              turbidity={6.5}
+              rayleigh={1.6}
+              mieCoefficient={0.005}
+              mieDirectionalG={0.82}
             />
           )}
 
+          {/* Offline Single-Frame PBR HDRI Environment Map for Realistic Specular & Clearcoat Reflections */}
+          <Environment frames={1} resolution={256}>
+            <color attach="background" args={[isNight ? '#0B101B' : '#1E293B']} />
+            {/* Overhead Sky / Ceiling Softboxes */}
+            <Lightformer
+              form="rect"
+              intensity={isNight ? 1.5 : 3.2}
+              color={isNight ? '#93C5FD' : '#FFFBEB'}
+              position={[0, 12, 0]}
+              rotation={[Math.PI / 2, 0, 0]}
+              scale={[24, 24, 1]}
+            />
+            {/* Golden Hour / Street Horizon Reflection Strip */}
+            <Lightformer
+              form="rect"
+              intensity={isNight ? 2.2 : 4.5}
+              color={isNight ? '#F59E0B' : '#FDE68A'}
+              position={[20, 4, 25]}
+              rotation={[0, -Math.PI / 4, 0]}
+              scale={[18, 6, 1]}
+            />
+            {/* Cool City Bounce Strip */}
+            <Lightformer
+              form="rect"
+              intensity={1.8}
+              color="#38BDF8"
+              position={[-20, 5, -15]}
+              rotation={[0, Math.PI / 3, 0]}
+              scale={[16, 6, 1]}
+            />
+          </Environment>
+
           {/* ======================================================== */}
-          {/* 2. DYNAMIC LIGHTING ENGINE                               */}
+          {/* 2. OPTIMIZED PHYSICALLY-BASED LIGHTING ENGINE            */}
           {/* ======================================================== */}
-          {/* Ambient Lighting */}
-          <ambientLight
-            color={isNight ? '#1E293B' : '#FFFFFF'}
-            intensity={isNight ? 0.45 : 0.9}
+          {/* Natural Sky/Ground Bounce Light */}
+          <hemisphereLight
+            color={isNight ? '#3B82F6' : '#FFFBEB'}
+            groundColor={isNight ? '#0F172A' : '#45382B'}
+            intensity={isNight ? 0.45 : 0.75}
           />
 
-          {/* Directional Sun / Moon Light */}
+          {/* Primary Directional Sun / Moon Light with Soft Shadows */}
           <directionalLight
-            position={[15, 35, 25]}
-            color={isNight ? '#90CAF9' : '#FFF8E1'}
-            intensity={isNight ? 0.6 : 2.0}
+            position={[22, 34, 26]}
+            color={isNight ? '#93C5FD' : '#FFF3D6'}
+            intensity={isNight ? 0.85 : 2.4}
             castShadow
-            shadow-mapSize-width={2048}
-            shadow-mapSize-height={2048}
-            shadow-camera-near={0.5}
-            shadow-camera-far={80}
-            shadow-camera-left={-25}
-            shadow-camera-right={25}
-            shadow-camera-top={25}
-            shadow-camera-bottom={-25}
-            shadow-bias={-0.0001}
+            shadow-mapSize-width={1536}
+            shadow-mapSize-height={1536}
+            shadow-camera-near={1}
+            shadow-camera-far={85}
+            shadow-camera-left={-24}
+            shadow-camera-right={24}
+            shadow-camera-top={24}
+            shadow-camera-bottom={-24}
+            shadow-bias={-0.0002}
           />
 
-          {/* Store Interior Overhead Warm Lighting Array */}
-          <pointLight position={[0, 5.2, 0]} color="#FFF3E0" intensity={12} distance={20} decay={2} />
-          <pointLight position={[0, 5.2, -8]} color="#FFF8E1" intensity={10} distance={18} decay={2} />
-          <pointLight position={[0, 5.2, 8]} color="#FFF8E1" intensity={10} distance={18} decay={2} />
+          {/* Consolidated Interior Warm Architectural Fill Lights (Only 2 lights for 60fps performance) */}
+          <pointLight position={[0, 5.2, 2]} color="#FFE4B5" intensity={14} distance={24} decay={1.8} />
+          <pointLight position={[0, 5.2, -9]} color="#FFD89B" intensity={14} distance={22} decay={1.8} />
 
           {/* ======================================================== */}
           {/* 3. INVISIBLE CLICK-TO-MOVE TARGET PLANE                  */}
@@ -125,7 +165,7 @@ export const WorldScene: React.FC = () => {
             visible={false}
             onClick={handleFloorClick}
           >
-            <planeGeometry args={[50, 60]} />
+            <planeGeometry args={[52, 62]} />
             <meshBasicMaterial />
           </mesh>
 
@@ -149,14 +189,15 @@ export const WorldScene: React.FC = () => {
           {/* Target Glide Beacon on Floor */}
           {targetPosition && <FloorDestinationBeacon target={targetPosition} />}
 
-          {/* Soft Ground Contact Shadows */}
+          {/* Baked Single-Pass Ground Contact Shadows (Zero Per-Frame Cost) */}
           <ContactShadows
             position={[0, 0.02, 0]}
-            opacity={0.65}
-            scale={40}
-            blur={2.0}
-            far={10}
-            resolution={1024}
+            frames={1}
+            opacity={0.55}
+            scale={42}
+            blur={2.2}
+            far={8}
+            resolution={512}
             color="#000000"
           />
         </Suspense>

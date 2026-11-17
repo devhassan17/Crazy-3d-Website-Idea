@@ -80,17 +80,8 @@ export const CheckoutModal: React.FC = () => {
                 onClick={closeModal}
                 className="bg-moyee-pink hover:bg-moyee-pink-hover text-white font-oswald text-sm font-bold uppercase px-6 py-3 rounded-xl transition-all shadow-lg"
               >
-                Return to Virtual Store
+                Return to 3D Flagship Store
               </button>
-              <a
-                href="https://www.moyeecoffee.com/shop"
-                target="_blank"
-                rel="noreferrer"
-                className="bg-gray-800 hover:bg-gray-700 text-white font-oswald text-sm font-bold uppercase px-6 py-3 rounded-xl border border-gray-600 transition-all flex items-center justify-center gap-2"
-              >
-                <span>Visit Classic Store</span>
-                <ExternalLink className="w-4 h-4 text-moyee-yellow" />
-              </a>
             </div>
           </div>
         ) : (
@@ -202,17 +193,11 @@ export const CheckoutModal: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Direct Odoo Live Checkout Option */}
+                {/* Direct Express Checkout Info */}
                 <div className="pt-2">
-                  <a
-                    href={checkoutUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="w-full inline-flex items-center justify-center gap-1.5 p-2 rounded-xl bg-gray-800 hover:bg-gray-700 border border-gray-600 text-[11px] font-condensed text-gray-300 hover:text-white transition-all"
-                  >
-                    <span>Or Launch Existing Secure moyeecoffee.com Odoo Cart</span>
-                    <ExternalLink className="w-3.5 h-3.5 text-moyee-yellow" />
-                  </a>
+                  <div className="w-full flex items-center justify-center gap-1.5 p-2 rounded-xl bg-gray-800/70 border border-gray-700 text-[11px] font-condensed text-gray-300">
+                    <span>Encrypted Direct-Origin Roastery Checkout</span>
+                  </div>
                 </div>
               </div>
 

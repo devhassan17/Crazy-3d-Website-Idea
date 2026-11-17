@@ -100,7 +100,7 @@ export const FairChainGalleryModal: React.FC = () => {
 
           <div className="p-4 rounded-2xl bg-green-950/40 border border-green-700/60">
             <span className="font-oswald text-xs uppercase text-green-400 font-bold tracking-wider">
-              MOYEE FAIRCHAIN MODEL
+              DIRECT ORIGIN 50/50 MODEL
             </span>
             <div className="flex items-baseline space-x-2 mt-1">
               <span className="font-oswald text-3xl font-black text-green-400">50 / 50</span>
@@ -167,15 +167,12 @@ export const FairChainGalleryModal: React.FC = () => {
             <span>Clean Claims Audited • Compliant with EUDR Deforestation Directive</span>
           </div>
 
-          <a
-            href="https://impactdashboard.moyeecoffee.com/"
-            target="_blank"
-            rel="noreferrer"
+          <button
+            onClick={closeModal}
             className="inline-flex items-center space-x-1.5 bg-moyee-yellow hover:bg-moyee-yellow-hover text-moyee-charcoal font-oswald text-xs font-bold uppercase px-4 py-2 rounded-xl transition-all shadow"
           >
-            <span>VIEW LIVE IMPACT DASHBOARD</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </a>
+            <span>RETURN TO 3D GALLERY</span>
+          </button>
         </div>
       </div>
     </div>

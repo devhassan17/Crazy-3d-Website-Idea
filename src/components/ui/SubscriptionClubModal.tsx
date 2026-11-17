@@ -40,7 +40,7 @@ export const SubscriptionClubModal: React.FC = () => {
             <span>NEVER RUN OUT OF COFFEE</span>
           </div>
           <h3 className="font-oswald text-3xl sm:text-4xl font-bold uppercase tracking-wider text-white">
-            MOYEE SUBSCRIPTION CLUB
+            ORIGIN ROASTER CLUB
           </h3>
           <p className="font-condensed text-sm text-gray-300 mt-1">
             Freshly roasted at origin • 100% Free Shipping on all recurring orders • Pause, swap, or cancel anytime in your Odoo account

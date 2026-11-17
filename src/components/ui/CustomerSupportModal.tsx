@@ -12,27 +12,27 @@ const FAQ_DATA: FAQItem[] = [
   {
     category: 'Freshness',
     q: 'How long does the coffee stay fresh after roasting at origin?',
-    a: 'Moyee wet-mills cherries and roasts beans within days of harvest at our African roasteries. Immediately after roasting, beans are sealed in airtight bags with a food-grade nitrogen flush and one-way degassing valve (displacing 99% of oxygen). Delivered to European doorsteps within 8–12 weeks of roasting, retaining peak aromatics for years inside unopened bags!'
+    a: 'We wet-mill cherries and roast beans within days of harvest at our East African roasteries. Immediately after roasting, beans are sealed in airtight bags with a food-grade nitrogen flush and one-way degassing valve (displacing 99% of oxygen), retaining peak aromatics inside unopened bags.'
   },
   {
-    category: 'Brand Story',
-    q: 'Where does the name "Moyee" come from?',
-    a: 'Moyee (pronounced "Mo-yeah!") means "mortar" in Amharic (Ethiopian language). In Ethiopia, coffee is traditionally hand-ground using a carved wooden mortar. This ancient tool symbolizes the technological and economic divide between producers and consumers. We chose this name to bridge and revolutionize that divide.'
+    category: 'Roastery Craft',
+    q: 'Why do you roast at origin instead of importing green beans?',
+    a: 'Traditional coffee exporters ship raw green beans out of producing countries, leaving growers with less than 10% of the retail value. By operating ISO-certified roasteries directly in Addis Ababa and Nairobi, skilled roasting jobs and 300% more economic value stay where the coffee grows.'
   },
   {
-    category: 'FairChain Impact',
-    q: 'What is the real difference between FairChain and Fairtrade?',
-    a: 'Fairtrade ensures local farmers receive a small minimum price for exporting raw green coffee, but 90%+ of value-added roasting profits remain in the West. FairChain is a true 50/50 enterprise: Moyee and our African partners co-own the processing business. We roast at origin, keeping 300% more economic impact, infrastructure, and living-income jobs in Ethiopia and Kenya.'
+    category: 'Direct Impact',
+    q: 'What is the difference between Direct Origin 50/50 and standard Fairtrade?',
+    a: 'Standard certifications offer a small floor price on raw green coffee while 90%+ of value-added roasting profits remain abroad. Our 50/50 model co-owns the roasting and packaging enterprise with local partners in Ethiopia and Kenya.'
   },
   {
     category: 'Pricing',
-    q: 'Why are Moyee coffees cheaper than specialty brands but pricier than commodity supermarkets?',
-    a: 'We pay farmers 20% above the open market rate (surpassing the Living Income Reference Price - LIRP). Because we cut out western middlemen traders and own our roasteries at origin, we provide authentic 80+ cupping score specialty grade coffee at accessible prices without the standard specialty middleman markup!'
+    q: 'How do you offer 84+ specialty grade coffee without middleman markups?',
+    a: 'We pay growers 20% above the open market rate (surpassing the Living Income Reference Price) and ship directly from our origin roasteries to your doorstep, eliminating commodity middlemen.'
   },
   {
     category: 'Environment',
-    q: 'Is Moyee coffee deforestation-free?',
-    a: 'Yes! Moyee coffee is 100% deforestation-free, fully aligned with the European Union Deforestation Regulation (EUDR). Our beans grow forest-shielded under natural guava and banana canopies. We plant 40,000+ trees annually and have produced 403,200 kg of organic biocompost to eliminate synthetic chemical fertilizers.'
+    q: 'Is your coffee 100% shade-grown and deforestation-free?',
+    a: 'Yes! Every harvest is 100% deforestation-free and aligned with the EU Deforestation Regulation (EUDR). Our beans grow under native forest canopies alongside guava and acacia shade trees.'
   }
 ];
 
@@ -76,10 +76,10 @@ export const CustomerSupportModal: React.FC = () => {
           </div>
           <div>
             <h3 className="font-oswald text-2xl font-bold uppercase tracking-wider text-white">
-              MOYEE HELP DESK — WE'RE HERE FOR YOU
+              ORIGIN CONCIERGE — WE'RE HERE FOR YOU
             </h3>
             <p className="text-xs font-condensed text-gray-300">
-              Direct Contact & Support • Powered by Odoo 18 Helpdesk
+              Direct Client Care & Roastery Support Desk
             </p>
           </div>
         </div>
@@ -201,7 +201,7 @@ export const CustomerSupportModal: React.FC = () => {
                     className="w-full bg-moyee-pink hover:bg-moyee-pink-hover text-white font-oswald text-sm font-bold uppercase tracking-wider py-3 rounded-xl shadow-xl border-2 border-moyee-yellow flex items-center justify-center space-x-2 transition-all"
                   >
                     <Send className="w-4 h-4 text-moyee-yellow" />
-                    <span>SEND TO MOYEE HELPDESK</span>
+                    <span>SEND TO CONCIERGE DESK</span>
                   </button>
                 </form>
 

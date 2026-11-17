@@ -12,18 +12,18 @@ export const WelcomeModal: React.FC = () => {
         <div className="absolute -top-24 -left-24 w-48 h-48 bg-moyee-pink/30 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-moyee-yellow/30 rounded-full blur-3xl pointer-events-none" />
 
-        {/* Moyee Brand Ribbon */}
-        <div className="inline-flex items-center space-x-2 bg-moyee-pink text-white font-oswald text-xs uppercase font-bold tracking-widest px-3.5 py-1 rounded-full shadow-lg mb-4">
+        {/* Brand Ribbon */}
+        <div className="inline-flex items-center space-x-2 bg-moyee-pink text-white font-oswald text-xs uppercase font-bold tracking-widest px-3.5 py-1 rounded-full shadow-lg mb-4 border border-moyee-yellow/40">
           <Sparkles className="w-3.5 h-3.5 text-moyee-yellow" />
-          <span>FAIRCHAIN 50/50 • VIRTUAL SHOPPING WORLD</span>
+          <span>DIRECT ORIGIN 50/50 • INTERACTIVE 3D FLAGSHIP</span>
         </div>
 
         {/* Hero Title */}
         <h2 className="font-oswald text-3xl sm:text-4xl md:text-5xl font-bold uppercase tracking-wide text-white leading-tight">
-          WELCOME TO <span className="text-moyee-yellow">MOYEE COFFEE</span>
+          WELCOME TO <span className="text-moyee-yellow">ORIGIN ROASTERY</span>
         </h2>
         <p className="font-condensed text-base sm:text-lg text-gray-200 mt-2 max-w-md mx-auto leading-relaxed">
-          Explore a Whole New World of Coffee. Walk around, inspect freshly roasted beans on 3D shelves, talk to our virtual barista, and shop directly with Odoo 18.
+          Step off the city boulevard into our flagship specialty coffee house. Inspect freshly roasted single-estate beans on 3D shelves, talk to our head barista, and order directly.
         </p>
 
         {/* Features highlights badge row */}

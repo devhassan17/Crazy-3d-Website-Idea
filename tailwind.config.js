@@ -8,19 +8,20 @@ export default {
     extend: {
       colors: {
         moyee: {
-          pink: '#E5007D',
-          'pink-hover': '#C7006D',
-          'pink-dark': '#840048',
-          'pink-light': '#FCE4F3',
-          'pink-subtle': '#F9C6E8',
-          yellow: '#FFD900',
-          'yellow-hover': '#E6C400',
+          // Remapped from hot-pink to realistic architectural Roasted Copper & Warm Amber
+          pink: '#C86D2D',
+          'pink-hover': '#A8571E',
+          'pink-dark': '#783B12',
+          'pink-light': '#FEF3C7',
+          'pink-subtle': '#FDE68A',
+          yellow: '#EAB308',
+          'yellow-hover': '#CA8A04',
           cream: '#EEECE1',
-          charcoal: '#272727',
-          dark: '#111827',
-          black: '#1A1A1A',
-          green: '#2E7D32',
-          'green-light': '#E8F5E9'
+          charcoal: '#16181D',
+          dark: '#0D0F13',
+          black: '#090A0D',
+          green: '#15803D',
+          'green-light': '#DCFCE7'
         }
       },
       fontFamily: {
@@ -30,8 +31,8 @@ export default {
       },
       keyframes: {
         pulseGlow: {
-          '0%, 100%': { opacity: '0.8', filter: 'drop-shadow(0 0 15px rgba(229,0,125,0.7))' },
-          '50%': { opacity: '1', filter: 'drop-shadow(0 0 30px rgba(229,0,125,1))' }
+          '0%, 100%': { opacity: '0.85', filter: 'drop-shadow(0 0 15px rgba(217,119,6,0.6))' },
+          '50%': { opacity: '1', filter: 'drop-shadow(0 0 28px rgba(234,179,8,0.9))' }
         },
         floatSlow: {
           '0%, 100%': { transform: 'translateY(0px)' },

@@ -77,7 +77,7 @@ export const HUD: React.FC = () => {
       const dataUrl = canvas.toDataURL('image/png');
       const a = document.createElement('a');
       a.href = dataUrl;
-      a.download = `moyee-3d-coffee-world-${Date.now()}.png`;
+      a.download = `origin-roastery-3d-${Date.now()}.png`;
       a.click();
     }
   };
@@ -88,21 +88,21 @@ export const HUD: React.FC = () => {
       {/* 1. TOP HEADER NAVIGATION BAR                             */}
       {/* ======================================================== */}
       <header className="flex items-center justify-between gap-3">
-        {/* Moyee Brand Pill */}
-        <div className="pointer-events-auto flex items-center space-x-3 bg-moyee-charcoal/90 border border-moyee-pink/40 backdrop-blur-md px-4 py-2 rounded-full shadow-2xl">
-          <div className="w-8 h-8 rounded-full bg-moyee-pink flex items-center justify-center font-oswald font-black text-white text-base shadow-md">
-            M
+        {/* Origin Roastery Brand Pill */}
+        <div className="pointer-events-auto flex items-center space-x-3 bg-moyee-charcoal/90 border border-moyee-yellow/40 backdrop-blur-md px-4 py-2 rounded-full shadow-2xl">
+          <div className="w-8 h-8 rounded-full bg-moyee-pink flex items-center justify-center font-oswald font-black text-white text-base shadow-md border border-moyee-yellow/60">
+            O
           </div>
           <div>
             <h1 className="font-oswald text-sm md:text-base font-bold tracking-wider text-white uppercase flex items-center gap-1.5">
-              MOYEE COFFEE
+              ORIGIN ROASTERY
               <span className="hidden sm:inline-block bg-moyee-yellow text-moyee-charcoal text-[9px] px-1.5 py-0.2 rounded font-black tracking-normal">
-                3D WORLD
+                FLAGSHIP 3D
               </span>
             </h1>
             <div className="flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-              <span className="text-[10px] text-gray-300 font-condensed">Odoo 18 Connected</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-[10px] text-gray-300 font-condensed">Direct Origin • Live POS</span>
             </div>
           </div>
         </div>
@@ -115,7 +115,7 @@ export const HUD: React.FC = () => {
           </span>
           <span className="text-gray-400 text-xs">•</span>
           <span className="font-condensed text-xs text-moyee-yellow">
-            {currentZoneObj?.subtitle || 'Moyee Store'}
+            {currentZoneObj?.subtitle || 'Flagship Roastery'}
           </span>
         </div>
 
@@ -170,16 +170,14 @@ export const HUD: React.FC = () => {
             <HelpCircle className="w-4 h-4" />
           </button>
 
-          {/* Switch to Classic Website */}
-          <a
-            href="https://www.moyeecoffee.com/"
-            target="_blank"
-            rel="noreferrer"
+          {/* Quick Catalog Trigger */}
+          <button
+            onClick={() => teleportToZone('beans_shelf')}
             className="hidden sm:flex items-center space-x-1.5 bg-gray-800/90 hover:bg-gray-700 text-gray-200 text-xs font-condensed font-bold px-3 py-2 rounded-full border border-gray-600 transition-all shadow-md"
           >
-            <span>Classic Web</span>
+            <span>Roast Catalog</span>
             <ExternalLink className="w-3.5 h-3.5" />
-          </a>
+          </button>
         </div>
       </header>
 

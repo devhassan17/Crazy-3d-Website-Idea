@@ -9,7 +9,7 @@
     margin: 0;
     padding: 0;
     overflow: hidden;
-    background-color: #111827;
+    background-color: #0D0F13;
     font-family: 'Roboto Condensed', system-ui, -apple-system, sans-serif;
     color: #FFFFFF;
     -webkit-font-smoothing: antialiased;
@@ -24,7 +24,7 @@
   }
 
   ::selection {
-    background-color: #E5007D;
+    background-color: #C86D2D;
     color: #FFFFFF;
   }
 }
@@ -35,15 +35,15 @@
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: rgba(17, 24, 39, 0.6);
+  background: rgba(13, 15, 19, 0.7);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #E5007D;
+  background: #C86D2D;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #FFD900;
+  background: #EAB308;
 }
 
 @keyframes fadeIn {
@@ -57,9 +57,9 @@
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.25s ease-out forwards;
+  animation: fadeIn 0.2s ease-out forwards;
 }
 
 .animate-slideLeft {
-  animation: slideLeft 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideLeft 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

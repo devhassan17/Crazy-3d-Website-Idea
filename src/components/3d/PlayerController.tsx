@@ -7,39 +7,42 @@ import { sounds } from '../../utils/audio';
 import { playerState } from '../../utils/playerState';
 import { StoreZoneId } from '../../types';
 
-// Re-used objects (avoid per-frame allocations / GC stutter)
+// Re-used objects (zero per-frame allocations / GC stutter)
 const UP = new THREE.Vector3(0, 1, 0);
 const inputVec = new THREE.Vector3();
 const targetVel = new THREE.Vector3();
 const euler = new THREE.Euler(0, 0, 0, 'YXZ');
 
-const PITCH_LIMIT = Math.PI / 2.6;
-const WALK_SPEED = 4.6;
-const RUN_SPEED = 7.8;
-const PRODUCT_PICK_RADIUS = 3.0;
+const PITCH_LIMIT = Math.PI / 2.4;
+const WALK_SPEED = 6.0;
+const RUN_SPEED = 11.2;
+const GLIDE_MAX_SPEED = 9.5;
+const BASE_FOV = 65;
+const SPRINT_FOV = 72;
+const PRODUCT_PICK_RADIUS = 3.2;
 
 /** Frame-rate independent smoothing factor */
 const damp = (lambda: number, dt: number) => 1 - Math.exp(-lambda * dt);
 
-// Collision detection against the store layout
+// Collision detection against the store & street layout
 const checkCollisions = (newX: number, newZ: number): { x: number; z: number } => {
   let x = newX;
   let z = newZ;
 
   // 1. Outer World Boundary Limits
   if (z > 14) {
-    // Exterior street limits
-    x = Math.max(-18, Math.min(18, x));
-    z = Math.min(28, z);
+    // Exterior city boulevard limits
+    x = Math.max(-22, Math.min(22, x));
+    z = Math.min(31, z);
   } else {
     // Inside Store limits
     x = Math.max(-11.6, Math.min(11.6, x));
     z = Math.max(-14.8, Math.min(14, z));
   }
 
-  // 2. Front Doorway Barrier (Doors are open at X: [-2.2, 2.2], but walls block else at Z: 14)
-  if (Math.abs(z - 14) < 0.35 && Math.abs(x) > 2.2) {
-    z = z > 14 ? 14.3 : 13.7;
+  // 2. Front Doorway Barrier (Doors are open at X: [-2.4, 2.4], glass curtain wall blocks else at Z: 14)
+  if (Math.abs(z - 14) < 0.38 && Math.abs(x) > 2.35) {
+    z = z > 14 ? 14.38 : 13.62;
   }
 
   // 3. Left Shelf Barrier (X: -11.5, Z: -5.5 to 5.5)
@@ -58,12 +61,22 @@ const checkCollisions = (newX: number, newZ: number): { x: number; z: number } =
     z = Math.abs(z + 8.8) < Math.abs(z + 11.0) ? -8.7 : -11.1;
   }
 
-  // 7. FairChain Globe Center Plinth (Circle at 0, -13.5, Radius: 2.1)
+  // 7. Origin Globe Center Plinth (Circle at 0, -13.5, Radius: 2.1)
   const distToGlobe = Math.hypot(x, z + 13.5);
   if (distToGlobe < 2.1) {
     const angle = Math.atan2(z + 13.5, x);
     x = Math.cos(angle) * 2.15;
     z = -13.5 + Math.sin(angle) * 2.15;
+  }
+
+  // 8. Exterior Parked Sports Cars Collision (Left car at [-9.5, 22.8], Right SUV at [10.5, 22.8])
+  if (z > 20.8 && z < 24.8) {
+    if (x > -12.3 && x < -6.7) {
+      z = z < 22.8 ? 20.75 : 24.85;
+    }
+    if (x > 7.5 && x < 13.5) {
+      z = z < 22.8 ? 20.75 : 24.85;
+    }
   }
 
   return { x, z };
@@ -87,15 +100,13 @@ const detectZone = (x: number, z: number): StoreZoneId => {
 };
 
 /**
- * First-person controller.
+ * High-Responsiveness First-Person Controller (GTA V/VI First-Person Feel).
  *
- * PERFORMANCE NOTE: nothing in here writes to the Zustand store on a per-frame
- * basis. Position/rotation live in the mutable `playerState`; the store is only
- * touched when something *changes* (zone, nearby product, glide arrival).
+ * PERFORMANCE NOTE: Zero per-frame React state writes. Position & rotation live
+ * in mutable `playerState`, with dynamic sprint FOV and natural stride physics.
  */
 export const PlayerController: React.FC = () => {
   const { camera, gl } = useThree();
-  // Only subscribe to what actually needs to re-bind listeners
   const activeModal = useStore((s) => s.activeModal);
   const setPointerLocked = useStore((s) => s.setPointerLocked);
 
@@ -108,11 +119,10 @@ export const PlayerController: React.FC = () => {
   const frameCounter = useRef(0);
   const lastNearbyId = useRef<string | null>(null);
 
-  // Drag-look tracking (single active pointer so the joystick finger never rotates the camera)
+  // Drag-look tracking
   const lookPointerId = useRef<number | null>(null);
   const lastPointerPos = useRef({ x: 0, y: 0 });
 
-  // Initialise camera at the player's position
   useEffect(() => {
     camera.position.set(playerState.x, 1.7, playerState.z);
   }, [camera]);
@@ -203,7 +213,6 @@ export const PlayerController: React.FC = () => {
       keysPressed.current[e.key.toLowerCase()] = false;
     };
 
-    // Release all keys if the window loses focus (prevents "stuck walking")
     const handleBlur = () => {
       keysPressed.current = {};
     };
@@ -222,7 +231,6 @@ export const PlayerController: React.FC = () => {
     const state = useStore.getState();
     if (state.activeModal !== null) return;
 
-    // Clamp delta so a dropped frame never teleports the player
     const dt = Math.min(rawDelta, 0.05);
     const keys = keysPressed.current;
 
@@ -230,12 +238,12 @@ export const PlayerController: React.FC = () => {
     const maxSpeed = isSprint ? RUN_SPEED : WALK_SPEED;
 
     // ---------- Look (keyboard turning) ----------
-    const turnRate = (isSprint ? 2.8 : 2.1) * dt;
+    const turnRate = (isSprint ? 3.0 : 2.3) * dt;
     if (keys['arrowleft'] || keys['q']) playerState.targetYaw += turnRate;
     if (keys['arrowright'] || keys['e']) playerState.targetYaw -= turnRate;
 
-    // Smoothly ease camera rotation towards target
-    const lookSmooth = damp(18, dt);
+    // Crisp camera look smoothing
+    const lookSmooth = damp(24, dt);
     playerState.yaw += (playerState.targetYaw - playerState.yaw) * lookSmooth;
     pitch.current += (targetPitch.current - pitch.current) * lookSmooth;
 
@@ -249,7 +257,7 @@ export const PlayerController: React.FC = () => {
 
     const joyX = playerState.joyX;
     const joyY = playerState.joyY;
-    if (Math.abs(joyX) > 0.08 || Math.abs(joyY) > 0.08) {
+    if (Math.abs(joyX) > 0.06 || Math.abs(joyY) > 0.06) {
       moveX += joyX;
       moveZ += joyY;
     }
@@ -258,18 +266,16 @@ export const PlayerController: React.FC = () => {
     const inputLen = Math.min(inputVec.length(), 1);
     const targetPosition = state.targetPosition;
 
-    if (inputLen > 0.05) {
+    if (inputLen > 0.04) {
       if (targetPosition) state.setTargetPosition(null);
-      // Analog: joystick tilt controls speed
       inputVec.normalize().applyAxisAngle(UP, playerState.yaw);
       targetVel.copy(inputVec).multiplyScalar(maxSpeed * inputLen);
     } else if (targetPosition) {
-      // Click / tap-to-glide
       const dx = targetPosition[0] - playerState.x;
       const dz = targetPosition[2] - playerState.z;
       const dist = Math.hypot(dx, dz);
       if (dist > 0.2) {
-        const glideSpeed = Math.min(maxSpeed, dist * 3);
+        const glideSpeed = Math.min(GLIDE_MAX_SPEED, Math.max(3.5, dist * 3.8));
         targetVel.set((dx / dist) * glideSpeed, 0, (dz / dist) * glideSpeed);
       } else {
         targetVel.set(0, 0, 0);
@@ -279,8 +285,8 @@ export const PlayerController: React.FC = () => {
       targetVel.set(0, 0, 0);
     }
 
-    // Smooth acceleration / deceleration
-    velocity.current.lerp(targetVel, damp(inputLen > 0.05 ? 10 : 8, dt));
+    // Snappy acceleration and clean deceleration
+    velocity.current.lerp(targetVel, damp(inputLen > 0.04 ? 16 : 12, dt));
 
     const speed = velocity.current.length();
     if (speed > 0.01) {
@@ -292,36 +298,37 @@ export const PlayerController: React.FC = () => {
       playerState.z = resolved.z;
 
       moveDistanceAccumulator.current += speed * dt;
-      if (moveDistanceAccumulator.current > 1.5) {
+      if (moveDistanceAccumulator.current > (isSprint ? 2.1 : 1.65)) {
         sounds.playFootstep();
         moveDistanceAccumulator.current = 0;
       }
-      walkBobTimer.current += dt * (isSprint ? 12 : 8.5);
+      walkBobTimer.current += dt * (isSprint ? 13.5 : 9.2);
     } else {
       velocity.current.set(0, 0, 0);
     }
 
-    // ---------- Camera ----------
-    const camDx = playerState.x - camera.position.x;
-    const camDz = playerState.z - camera.position.z;
-    if (camDx * camDx + camDz * camDz > 9) {
-      // Teleported: snap instead of sliding across the store
-      camera.position.x = playerState.x;
-      camera.position.z = playerState.z;
-      velocity.current.set(0, 0, 0);
-    } else {
-      const posSmooth = damp(20, dt);
-      camera.position.x += camDx * posSmooth;
-      camera.position.z += camDz * posSmooth;
-    }
+    // ---------- Direct Camera Tracking (Zero Floaty Lag) ----------
+    camera.position.x = playerState.x;
+    camera.position.z = playerState.z;
 
-    // Subtle head bob scaled by speed
-    const bobAmount = Math.min(speed / RUN_SPEED, 1) * 0.03;
+    // Realistic first-person stride bob & subtle shoulder roll
+    const speedRatio = Math.min(speed / RUN_SPEED, 1);
+    const bobAmount = speedRatio * 0.032;
     const targetY = 1.7 + Math.sin(walkBobTimer.current) * bobAmount;
-    camera.position.y += (targetY - camera.position.y) * damp(12, dt);
+    camera.position.y += (targetY - camera.position.y) * damp(16, dt);
 
-    euler.set(pitch.current, playerState.yaw, 0);
+    const rollSway = Math.cos(walkBobTimer.current * 0.5) * speedRatio * 0.0045;
+    euler.set(pitch.current, playerState.yaw, rollSway);
     camera.quaternion.setFromEuler(euler);
+
+    // Dynamic GTA-style Sprint FOV Kick
+    if (camera instanceof THREE.PerspectiveCamera) {
+      const wantFov = isSprint && speed > WALK_SPEED * 0.8 ? SPRINT_FOV : BASE_FOV;
+      if (Math.abs(camera.fov - wantFov) > 0.05) {
+        camera.fov += (wantFov - camera.fov) * damp(8, dt);
+        camera.updateProjectionMatrix();
+      }
+    }
 
     // ---------- Low-frequency world checks (every 8 frames) ----------
     frameCounter.current++;
@@ -332,7 +339,7 @@ export const PlayerController: React.FC = () => {
     state.setIsInsideStore(z <= 14);
     state.setCurrentZone(detectZone(x, z));
 
-    // Nearest product for quick-pick (store only updated when it changes)
+    // Nearest product for quick-pick
     let closestDist = Infinity;
     let closestProd: (typeof MOYEE_PRODUCTS)[number] | null = null;
     for (const prod of MOYEE_PRODUCTS) {

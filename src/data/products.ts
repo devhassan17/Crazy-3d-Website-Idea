@@ -8,7 +8,7 @@ export const MOYEE_PRODUCTS: Product[] = [
     name: 'African Triple Blend',
     tagline: 'Full-bodied, complex & balanced with notes of dark chocolate and caramel.',
     badge: 'BESTSELLER',
-    price: 6.50, // Base price 250g
+    price: 6.50,
     currency: '€',
     category: 'beans',
     boldness: 2,
@@ -18,16 +18,16 @@ export const MOYEE_PRODUCTS: Product[] = [
     altitude: '1,600m – 2,100m',
     flavorNotes: ['Dark Chocolate', 'Toasted Hazelnut', 'Caramel', 'Ripe Red Fruit'],
     description:
-      'For some coffee drinkers, three beans are better than two or one. Our African Triple Blend is a case in point. The beans are sourced from smallholder farms across East Africa. Each farm has its own special characteristics, regenerative agroforestry methods, and terroir. The result is a full-bodied blend with a sweet finish and moderate acidity.',
+      'Sourced from high-altitude smallholder estates across East Africa. Each farm brings distinct volcanic terroir and shade-grown agroforestry methods, yielding a full-bodied espresso and filter blend with a velvety sweet finish.',
     fairChainStory:
       'Roasted locally in Nairobi, Kenya at our state-of-the-art facility, leaving 300% more value behind in the country of origin. Smallholders earn 20% above the Living Income Reference Price.',
     weights: [
       { label: '250g', priceMultiplier: 1, isDefault: true },
-      { label: '1kg', priceMultiplier: 3.538 } // €23.00
+      { label: '1kg', priceMultiplier: 3.538 }
     ],
     grindOptions: ['Whole Beans', 'Filter Grind', 'Espresso Grind'],
     inStock: true,
-    colorHex: '#E5007D', // Iconic Moyee Pink
+    colorHex: '#B45309', // Roasted Copper
     shelfLocation: {
       zone: 'beans_shelf',
       shelfId: 'shelf-beans-1',
@@ -42,9 +42,9 @@ export const MOYEE_PRODUCTS: Product[] = [
     odooId: 5,
     slug: 'double-1-kg-5',
     name: 'Ethiopian Double Blend',
-    tagline: 'The best of both worlds: bright Limu fruitiness paired with sweet Jimma cocoa.',
-    badge: 'FAIRCHAIN ORIGINAL',
-    price: 7.00, // Base price 250g
+    tagline: 'Bright Limu citrus blossom paired with sweet sun-dried Jimma cocoa.',
+    badge: 'HOUSE SIGNATURE',
+    price: 7.00,
     currency: '€',
     category: 'beans',
     boldness: 1,
@@ -54,16 +54,16 @@ export const MOYEE_PRODUCTS: Product[] = [
     altitude: '1,800m – 2,200m',
     flavorNotes: ['Sweet Honey', 'Orange Blossom', 'Milk Chocolate', 'Fruity Cocoa'],
     description:
-      'This historic Ethiopian blend brings together washed Limu beans (80+ specialty cupping score) and sweeter sun-dried unwashed Jimma beans. A smooth, nuanced cup bursting with lively citrus brightness and a comforting brown-sugar chocolate finish.',
+      'This signature Ethiopian blend unites washed Limu beans (84+ specialty cupping score) with sun-dried natural Jimma beans. A nuanced, silky cup bursting with lively bergamot brightness and a warm brown-sugar finish.',
     fairChainStory:
-      'Crafted in our ISO-certified Addis Ababa roastery, which serves as an incubator for female leadership and local roasting entrepreneurs. Every bag directly empowers 107 farming families on Mizan Farm.',
+      'Crafted in our ISO-certified Addis Ababa roastery, empowering over 100 farming families across the Mizan highland forest reserve.',
     weights: [
       { label: '250g', priceMultiplier: 1, isDefault: true },
-      { label: '1kg', priceMultiplier: 3.571 } // €25.00
+      { label: '1kg', priceMultiplier: 3.571 }
     ],
     grindOptions: ['Whole Beans', 'Filter Grind', 'Espresso Grind'],
     inStock: true,
-    colorHex: '#FFD900', // Rebel Yellow
+    colorHex: '#D97706', // Warm Amber Gold
     shelfLocation: {
       zone: 'beans_shelf',
       shelfId: 'shelf-beans-2',
@@ -78,7 +78,7 @@ export const MOYEE_PRODUCTS: Product[] = [
     odooId: 7,
     slug: 'dark-1-kg-7',
     name: 'Ethiopian Dark Roast',
-    tagline: 'Deep, smoky cocoa and roasted almonds for a fearless morning kickstart.',
+    tagline: 'Deep, smoky cocoa and roasted almonds for a commanding morning espresso.',
     badge: 'INTENSE',
     price: 6.00,
     currency: '€',
@@ -86,20 +86,20 @@ export const MOYEE_PRODUCTS: Product[] = [
     boldness: 3,
     roastLevel: 'Dark',
     roastLocation: 'Addis Ababa, Ethiopia Roastery',
-    origins: ['Mizan Farm, Ethiopia'],
+    origins: ['Mizan Forest Reserve, Ethiopia'],
     altitude: '1,900m',
     flavorNotes: ['Dark Cocoa', 'Roasted Almond', 'Smoky Oak', 'Low Acidity'],
     description:
-      'Some mornings demand a commanding kick. Formulated specifically to cut through milk for lattes and cappuccinos or enjoyed black for a velvety, low-acid, intense dark chocolate profile.',
+      'Formulated to cut effortlessly through steamed milk for flat whites and cappuccinos, or pulled straight as a syrupy, low-acidristretto with deep dark chocolate intensity.',
     fairChainStory:
-      'Grown on our 247-hectare forest laboratory in Mizan, Ethiopia, where coffee grows under native canopies alongside banana and guava trees, sequestering tons of carbon per year.',
+      'Grown under native forest canopies in Mizan, Ethiopia alongside wild fig and acacia trees, naturally sequestering carbon every harvest.',
     weights: [
       { label: '250g', priceMultiplier: 1, isDefault: true },
-      { label: '1kg', priceMultiplier: 3.5 } // €21.00
+      { label: '1kg', priceMultiplier: 3.5 }
     ],
     grindOptions: ['Whole Beans', 'Filter Grind', 'Espresso Grind'],
     inStock: true,
-    colorHex: '#272727', // Charcoal
+    colorHex: '#27272A', // Obsidian Charcoal
     shelfLocation: {
       zone: 'beans_shelf',
       shelfId: 'shelf-beans-3',
@@ -114,7 +114,7 @@ export const MOYEE_PRODUCTS: Product[] = [
     odooId: 30,
     slug: 'ml1000w-microlot-1-kg-subscription-30',
     name: 'Rotating Microlot Series',
-    tagline: 'Ultra-rare single micro-lots with experimental fermentations for true coffee geeks.',
+    tagline: 'Ultra-rare single micro-lots with anaerobic fermentations for connoisseurs.',
     badge: 'LIMITED EDITION',
     price: 10.50,
     currency: '€',
@@ -122,20 +122,20 @@ export const MOYEE_PRODUCTS: Product[] = [
     boldness: 2,
     roastLevel: 'Omni',
     roastLocation: 'Nairobi & Addis Ababa',
-    origins: ['Rotating Micro-Farms Worldwide (Ethiopia, Kenya, Colombia)'],
+    origins: ['High-Altitude Micro-Estates (Ethiopia, Kenya, Colombia)'],
     altitude: '2,000m+',
     flavorNotes: ['Bergamot', 'Papaya', 'Wild Berries', 'Jasmine'],
     description:
-      'Our monthly rotating Microlot. Throw on your backpack and explore boundary-pushing natural and anaerobic fermentations from master growers. When this harvest batch sells out, a new lot takes its place.',
+      'Our seasonal single-estate Microlot. Explore boundary-pushing natural and carbonic maceration harvests from master growers. Once a batch is gone, a new harvest takes its place.',
     fairChainStory:
-      'Provides micro-lot growers with direct-to-consumer profit margins up to 400% higher than traditional auction market rates.',
+      'Provides micro-lot growers with direct profit margins up to 400% higher than traditional commodity auction rates.',
     weights: [
       { label: '250g', priceMultiplier: 1, isDefault: true },
-      { label: '1kg', priceMultiplier: 3.19 } // €33.50
+      { label: '1kg', priceMultiplier: 3.19 }
     ],
     grindOptions: ['Whole Beans', 'Filter Grind', 'Espresso Grind'],
     inStock: true,
-    colorHex: '#9C27B0', // Purple
+    colorHex: '#6D28D9', // Royal Plum
     shelfLocation: {
       zone: 'beans_shelf',
       shelfId: 'shelf-beans-4',
@@ -157,21 +157,21 @@ export const MOYEE_PRODUCTS: Product[] = [
     category: 'beans',
     boldness: 1,
     roastLevel: 'Medium',
-    roastLocation: 'Precision Roasted in Amsterdam & Origin',
+    roastLocation: 'Small-Batch Roasted at Origin',
     origins: ['Slopes of Mount Kilimanjaro & Meru, Tanzania'],
     altitude: '2,000m',
     flavorNotes: ['Floral Bouquet', 'Red Currant', 'Blood Orange', 'Mountain Honey'],
     description:
-      'High-altitude volcanic treasure. Glacial meltwater, blazing equatorial days, and freezing nights cause the cherries to ripen slowly over months, concentrating sugars into extraordinary floral sweetness.',
+      'High-altitude volcanic treasure. Glacial meltwater, equatorial sunshine, and cool mountain nights allow cherries to mature slowly, concentrating sugars into extraordinary floral sweetness.',
     fairChainStory:
-      'Direct partnerships with smallholder farmer cooperatives on the high slopes of Kilimanjaro.',
+      'Direct partnerships with smallholder farmer cooperatives on the southern slopes of Kilimanjaro.',
     weights: [
       { label: '250g', priceMultiplier: 1, isDefault: true },
-      { label: '1kg', priceMultiplier: 3.176 } // €27.00
+      { label: '1kg', priceMultiplier: 3.176 }
     ],
     grindOptions: ['Whole Beans', 'Filter Grind', 'Espresso Grind'],
     inStock: true,
-    colorHex: '#00BCD4', // Cyan
+    colorHex: '#0F766E', // Deep Emerald Teal
     shelfLocation: {
       zone: 'beans_shelf',
       shelfId: 'shelf-beans-5',
@@ -193,18 +193,18 @@ export const MOYEE_PRODUCTS: Product[] = [
     category: 'capsules',
     boldness: 2,
     roastLevel: 'Medium',
-    roastLocation: 'Freshly sealed in nitrogen atmosphere',
+    roastLocation: 'Sealed in Nitrogen Atmosphere',
     origins: ['Ethiopia (Limu & Jimma)'],
     altitude: '1,850m',
     flavorNotes: ['Dark Chocolate', 'Toasted Almond', 'Velvety Body'],
     description:
-      '25 specialty coffee capsules roasted with care. Sealed with nitrogen barrier to ensure total oxygen-free freshness for over 18 months.',
+      '25 specialty coffee capsules precision-ground and hermetically sealed with a nitrogen barrier to lock in peak roastery aroma for 18+ months.',
     fairChainStory:
-      'Capsules that do not compromise on ethics. Premium African specialty coffee sealed at peak aroma.',
+      'Compostable biopolymer pods filled with direct-trade East African specialty coffee.',
     weights: [{ label: '25 Capsules', priceMultiplier: 1, isDefault: true }],
     grindOptions: ['Espresso Grind'],
     inStock: true,
-    colorHex: '#E5007D',
+    colorHex: '#B45309',
     shelfLocation: {
       zone: 'capsules_shelf',
       shelfId: 'shelf-capsules-1',
@@ -219,21 +219,21 @@ export const MOYEE_PRODUCTS: Product[] = [
     odooId: 10,
     slug: 'capespresso25-espresso-capsules-10',
     name: 'Espresso Capsules (25 Pods)',
-    tagline: 'Intense, creamy espresso with thick crema and rich dark chocolate.',
+    tagline: 'Intense, creamy espresso with thick hazelnut crema and dark chocolate.',
     badge: '25% OFF BUNDLE',
     price: 10.00,
     currency: '€',
     category: 'capsules',
     boldness: 3,
     roastLevel: 'Dark',
-    roastLocation: 'Freshly sealed in nitrogen atmosphere',
+    roastLocation: 'Sealed in Nitrogen Atmosphere',
     origins: ['Ethiopia & Kenya'],
     altitude: '1,900m',
     flavorNotes: ['Dark Chocolate', 'Nutty Walnut', 'Spicy Crema'],
     description:
-      '25 capsules for espresso enthusiasts. An aromatic, full-strength roast with deep cocoa notes and rich, dense crema.',
+      '25 capsules crafted for high-pressure espresso extraction. Delivers a full-strength shot with dense tiger-stripe crema and lingering cocoa richness.',
     fairChainStory:
-      'Buy 3 bags and get 25% off automatically. Backing FairChain farmers with every morning espresso shot.',
+      'Directly supports origin roasting facilities and living income programs with every morning espresso.',
     weights: [{ label: '25 Capsules', priceMultiplier: 1, isDefault: true }],
     grindOptions: ['Espresso Grind'],
     inStock: true,
@@ -251,26 +251,26 @@ export const MOYEE_PRODUCTS: Product[] = [
     id: 'decaf-capsules',
     odooId: 11,
     slug: 'capdecaf25-decaf-capsules-11',
-    name: 'Decaf Capsules (25 Pods)',
-    tagline: 'All the deep flavor of dark roast Ethiopian coffee — zero caffeine.',
+    name: 'Mountain Water Decaf (25 Pods)',
+    tagline: 'All the deep flavor of highland Ethiopian coffee — zero caffeine.',
     badge: 'SOLVENT-FREE',
     price: 10.00,
     currency: '€',
     category: 'capsules',
     boldness: 2,
     roastLevel: 'Medium',
-    roastLocation: 'Freshly sealed in nitrogen atmosphere',
+    roastLocation: 'Sealed in Nitrogen Atmosphere',
     origins: ['Limu, Ethiopia'],
     altitude: '1,800m',
     flavorNotes: ['Sweet Walnut', 'Dark Chocolate', 'Balanced Smoothness'],
     description:
-      'Naturally decaffeinated using pure mountain water processing. No harsh chemical solvents, keeping all delicate flavor lipids intact.',
+      'Naturally decaffeinated using pure glacial mountain water osmosis. Zero chemical solvents, preserving 100% of the delicate origin lipids and aromatics.',
     fairChainStory:
-      'FairChain decaf directly proves that conscious coffee does not require settling for poor taste.',
+      'Proving that late-night decaf espresso can deliver uncompromising specialty cupping scores.',
     weights: [{ label: '25 Capsules', priceMultiplier: 1, isDefault: true }],
     grindOptions: ['Espresso Grind'],
     inStock: true,
-    colorHex: '#00897B', // Teal
+    colorHex: '#0D9488',
     shelfLocation: {
       zone: 'capsules_shelf',
       shelfId: 'shelf-capsules-3',
@@ -283,9 +283,9 @@ export const MOYEE_PRODUCTS: Product[] = [
   {
     id: 'fairchain-tasting-pack',
     odooId: 50,
-    slug: 'packs-bundle-fairchain-tasting-pack',
-    name: 'FairChain Rebel Starter Bundle',
-    tagline: 'Triple Blend 1kg + Double Blend 250g + Limited Edition Moyee Enamel Mug.',
+    slug: 'packs-bundle-tasting-pack',
+    name: 'Artisan Roaster Tasting Bundle',
+    tagline: 'Triple Blend 1kg + Double Blend 250g + Heavyweight Ceramic Tasting Mug.',
     badge: 'SAVE €12',
     price: 36.00,
     currency: '€',
@@ -296,13 +296,13 @@ export const MOYEE_PRODUCTS: Product[] = [
     origins: ['East Africa Multi-Origin'],
     flavorNotes: ['Dark Chocolate', 'Orange Blossom', 'Honey', 'Caramel'],
     description:
-      'The ultimate introduction to radically good coffee. Experience both our bestseller African Triple and our fruity Ethiopian Double, complete with our signature hot-pink enamel campfire mug.',
+      'The definitive introduction to direct-origin specialty coffee. Experience both our flagship African Triple Blend and our floral Ethiopian Double Blend, paired with our matte stoneware tasting mug.',
     fairChainStory:
-      'Directly funds the planting of 2 new shade trees on Mizan farm with every bundle purchased.',
+      'Directly funds the planting of 2 native shade trees in our agroforestry reserve with every bundle purchased.',
     weights: [{ label: '1kg', priceMultiplier: 1, isDefault: true }],
     grindOptions: ['Whole Beans', 'Filter Grind', 'Espresso Grind'],
     inStock: true,
-    colorHex: '#E5007D',
+    colorHex: '#9A3412',
     shelfLocation: {
       zone: 'bundles_shelf',
       shelfId: 'shelf-bundle-1',
@@ -317,19 +317,19 @@ export const MOYEE_PRODUCTS: Product[] = [
 export const STORE_ZONES: StoreZone[] = [
   {
     id: 'exterior',
-    title: 'Storefront Entrance',
-    subtitle: 'Amsterdam Street & Welcoming Facade',
-    description: 'Outside the illuminated glass building on the Amsterdam canal street pavement.',
-    position: [0, 1.7, 24],
+    title: 'City Street & Facade',
+    subtitle: 'Downtown Boulevard & Flagship Terrace',
+    description: 'Outside on the bustling city boulevard with parked cars, sidewalk café seating, and architectural glass facade.',
+    position: [0, 1.7, 23],
     cameraTarget: [0, 2.5, 14],
     rotationY: 0,
     icon: 'Store'
   },
   {
     id: 'entrance',
-    title: 'Welcome Foyer',
-    subtitle: 'Main Store Entrance',
-    description: 'Inside the threshold with a direct view of the entire shopping showroom.',
+    title: 'Main Foyer',
+    subtitle: 'Flagship Roastery Entrance',
+    description: 'Inside the architectural glass foyer overlooking the main coffee showroom.',
     position: [0, 1.7, 12],
     cameraTarget: [0, 2.0, 0],
     rotationY: 0,
@@ -338,8 +338,8 @@ export const STORE_ZONES: StoreZone[] = [
   {
     id: 'beans_shelf',
     title: 'Specialty Coffee Beans',
-    subtitle: 'Wall of FairChain Roasts',
-    description: 'Browse Triple Blend, Double Blend, Dark Roast, Microlots and Kilimanjaro single origins.',
+    subtitle: 'Single Estate & Origin Roasts',
+    description: 'Browse Triple Blend, Double Blend, Dark Roast, Microlots, and Kilimanjaro single origins.',
     position: [-8.5, 1.7, 1],
     cameraTarget: [-11, 2.0, 1],
     rotationY: Math.PI / 2,
@@ -349,7 +349,7 @@ export const STORE_ZONES: StoreZone[] = [
     id: 'capsules_shelf',
     title: 'Capsules & Pods Display',
     subtitle: 'Nespresso® Compatible Station',
-    description: 'Explore Lungo, Espresso, and Decaf nitrogen-sealed oxygen-free capsules.',
+    description: 'Explore Lungo, Espresso, and Mountain Water Decaf nitrogen-sealed capsules.',
     position: [8.5, 1.7, 1],
     cameraTarget: [11, 2.0, 1],
     rotationY: -Math.PI / 2,
@@ -358,8 +358,8 @@ export const STORE_ZONES: StoreZone[] = [
   {
     id: 'bundles_shelf',
     title: 'Gift Packs & Bundles',
-    subtitle: 'Tasting Boxes & Gear',
-    description: 'Starter kits, curated discovery bundles, and custom Moyee accessories.',
+    subtitle: 'Tasting Boxes & Ceramic Gear',
+    description: 'Starter kits, curated discovery bundles, and barista accessories.',
     position: [8.5, 1.7, -3],
     cameraTarget: [11, 2.0, -3],
     rotationY: -Math.PI / 2,
@@ -367,9 +367,9 @@ export const STORE_ZONES: StoreZone[] = [
   },
   {
     id: 'tasting_bar',
-    title: 'Coffee Tasting Bar',
-    subtitle: 'Live Barista Experience',
-    description: 'Watch coffee brewing demonstrations, talk with our virtual barista, and sample roasts.',
+    title: 'Espresso & Tasting Bar',
+    subtitle: 'Live Barista Brew Station',
+    description: 'Watch espresso extraction demonstrations, talk with Head Barista Amara, and sample roasts.',
     position: [-4.5, 1.7, -7],
     cameraTarget: [-4.5, 2.0, -10],
     rotationY: Math.PI,
@@ -378,8 +378,8 @@ export const STORE_ZONES: StoreZone[] = [
   {
     id: 'checkout_counter',
     title: 'Checkout Counter',
-    subtitle: 'Payment Kiosk & Cashier',
-    description: 'Review your shopping basket, apply discount codes, and complete your order with Odoo 18.',
+    subtitle: 'POS Terminal & Cashier',
+    description: 'Review your shopping basket, apply discount codes, and complete your order.',
     position: [4.5, 1.7, -7],
     cameraTarget: [4.5, 2.0, -10],
     rotationY: Math.PI,
@@ -387,9 +387,9 @@ export const STORE_ZONES: StoreZone[] = [
   },
   {
     id: 'subscription_lounge',
-    title: 'Subscription Club Lounge',
-    subtitle: 'Never Run Out of Coffee',
-    description: 'Relax in the leather armchairs, customize delivery frequencies, and unlock free shipping.',
+    title: 'Roaster Club Lounge',
+    subtitle: 'Automatic Home Delivery',
+    description: 'Relax in the leather armchairs, customize delivery schedules, and unlock free shipping.',
     position: [-8, 1.7, -11.5],
     cameraTarget: [-8, 2.0, -14],
     rotationY: Math.PI,
@@ -397,9 +397,9 @@ export const STORE_ZONES: StoreZone[] = [
   },
   {
     id: 'fairchain_gallery',
-    title: 'FairChain Impact Gallery',
-    subtitle: 'The 3D Origin Experience',
-    description: 'Touch the 3D globe to trace beans from Ethiopia and Kenya, and view real-time carbon data.',
+    title: 'Origin Impact Gallery',
+    subtitle: 'Interactive 3D Earth & Supply Chain',
+    description: 'Inspect the 3D globe to trace beans from Ethiopia and Kenya and view real-time sustainability metrics.',
     position: [0, 1.7, -11.5],
     cameraTarget: [0, 2.0, -14],
     rotationY: Math.PI,
@@ -407,9 +407,9 @@ export const STORE_ZONES: StoreZone[] = [
   },
   {
     id: 'helpdesk',
-    title: 'Moyee Customer Support',
-    subtitle: 'Charming Mini Post Office',
-    description: 'Chat with Melanie from Kenya, ask questions, submit feedback, or browse store FAQs.',
+    title: 'Concierge & Support Desk',
+    subtitle: 'Customer Care & Post Station',
+    description: 'Chat with Melanie at the concierge desk, submit inquiries, or browse store FAQs.',
     position: [8, 1.7, -11.5],
     cameraTarget: [8, 2.0, -14],
     rotationY: Math.PI,
@@ -417,9 +417,9 @@ export const STORE_ZONES: StoreZone[] = [
   },
   {
     id: 'coffee_quiz',
-    title: 'Coffee Finder Kiosk',
-    subtitle: 'Find Your Perfect Match in 4 Questions',
-    description: 'Take the smart interactive quiz to discover your ideal roast, grind, and boldness.',
+    title: 'Sommelier Finder Kiosk',
+    subtitle: 'Match Your Roast in 4 Questions',
+    description: 'Take the interactive taste profile quiz to discover your ideal roast, grind, and origin.',
     position: [-5.5, 1.7, 7.5],
     cameraTarget: [-7, 2.0, 7.5],
     rotationY: Math.PI / 2,
@@ -427,9 +427,9 @@ export const STORE_ZONES: StoreZone[] = [
   },
   {
     id: 'delivery_desk',
-    title: 'Delivery & Order Tracking',
-    subtitle: 'Real-Time Dispatch Desk',
-    description: 'Check active Odoo order numbers, track parcels, and view delivery estimates.',
+    title: 'Dispatch & Order Tracking',
+    subtitle: 'Live Logistics Desk',
+    description: 'Check active order numbers, track courier parcels, and view roast-to-doorstep milestones.',
     position: [5.5, 1.7, 7.5],
     cameraTarget: [7, 2.0, 7.5],
     rotationY: -Math.PI / 2,
